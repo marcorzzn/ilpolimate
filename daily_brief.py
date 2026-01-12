@@ -7,71 +7,79 @@ from groq import Groq
 # --- CONFIGURAZIONE ---
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
-# Verifica preliminare chiave
 if not GROQ_API_KEY:
-    report_content = "ERRORE FATALE: Manca la GROQ_API_KEY nei Secrets."
-else:
-    # --- 1. GATHERING (DUCKDUCKGO) ---
-    ddgs = DDGS()
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
-    
-    queries = [
-        "arxiv physics breakthrough new discovery last 24 hours",
-        "semiconductor advanced packaging news tsmc intel last 24 hours",
-        "undersea internet cables geopolitics news last 24 hours",
-        "central bank digital currency cbdc latest pilot news last 24 hours"
-    ]
+    print("ERRORE: Manca la GROQ_API_KEY.")
+    exit(1)
 
-    print(f"Scansione per il {today}...")
-    raw_context = ""
+# --- 1. GATHERING (STEALTH MODE) ---
+print("Inizializzazione DuckDuckGo Stealth...")
+ddgs = DDGS()
+today = datetime.datetime.now().strftime("%Y-%m-%d")
 
-    for query in queries:
-        try:
-            results = ddgs.text(query, max_results=3)
-            if results:
-                for r in results:
-                    raw_context += f"\nTITOLO: {r['title']}\nSNIPPET: {r['body']}\nURL: {r['href']}\n"
-            time.sleep(1)
-        except Exception as e:
-            print(f"Errore ricerca '{query}': {e}")
+# Query semplificate per massimizzare i risultati
+queries = [
+    "physics breakthrough arxiv nature science", # Tolto "last 24h" per testare se trova qualcosa
+    "semiconductor technology news tsmc intel",
+    "submarine cables geopolitics internet",
+    "central bank digital currency news"
+]
 
-    if not raw_context:
-        raw_context = "NESSUNA NOTIZIA TROVATA. Il motore di ricerca non ha restituito dati."
+raw_context = ""
 
-    # --- 2. ANALYSIS (GROQ) ---
-    system_prompt = """
-    SEI: "The Polymath", analista di intelligence.
-    OBIETTIVO: Scrivere "THE POLYMATH BRIEF".
-    DATA: {date}
-    
-    REGOLE:
-    1. Fonte dati: Usa SOLO il testo fornito.
-    2. Stile: Asettico, tecnico, italiano.
-    3. Formato: 4 Sezioni (Frontiera Tech, Hardware, Geopolitica, Macro).
-    Per ogni notizia usa questo format:
-    - **Il Segnale:** [Titolo]
-    - **I Fatti:** [Dettagli]
-    - **Il Meccanismo:** [Spiegazione tecnica]
-    - **Fonti:** [URL]
-    """
-
+for query in queries:
+    print(f"--- Cercando: {query} ---")
     try:
-        client = Groq(api_key=GROQ_API_KEY)
+        # backend="html" è più lento ma spesso aggira i blocchi anti-bot
+        # togliamo time_range per ora per assicurarci di trovare ALMENO qualcosa
+        results = ddgs.text(query, max_results=4, backend="html")
         
-        completion = client.chat.completions.create(
-            # AGGIORNAMENTO MODELLO: Usiamo la versione 3.3 Versatile (più stabile)
-            model="llama-3.3-70b-versatile", 
-            messages=[
-                {"role": "system", "content": system_prompt.format(date=today)},
-                {"role": "user", "content": f"NOTIZIE GREZZE:\n{raw_context}"}
-            ],
-            temperature=0.3
-        )
-        report_content = completion.choices[0].message.content
+        found_for_query = False
+        if results:
+            for r in results:
+                print(f"Trovato: {r['title'][:30]}...") # Log per capire cosa trova
+                raw_context += f"\nTITOLO: {r['title']}\nSNIPPET: {r['body']}\nURL: {r['href']}\n"
+                found_for_query = True
+        
+        if not found_for_query:
+            print("Nessun risultato per questa query.")
+
+        time.sleep(2) # Pausa più lunga per non sembrare un bot aggressivo
 
     except Exception as e:
-        # QUI CATTURIAMO L'ERRORE VERO E LO SCRIVIAMO NEL FILE
-        report_content = f"## ERRORE DI SISTEMA\n\nIl motore AI ha fallito. Ecco il log tecnico:\n\n`{str(e)}`"
+        print(f"ERRORE RICERCA '{query}': {e}")
+
+# Se ancora vuoto, usiamo dati finti per testare almeno la generazione del sito
+if not raw_context or len(raw_context) < 50:
+    print("ATTENZIONE: Ricerca fallita o bloccata. Uso dati di fallback.")
+    raw_context = "NESSUNA NOTIZIA TROVATA DAL MOTORE DI RICERCA. IL SISTEMA DI GATHERING È STATO BLOCCATO."
+
+# --- 2. ANALYSIS (GROQ) ---
+print(f"Input per AI (lungh: {len(raw_context)} chars). Generazione report...")
+
+system_prompt = """
+SEI: "The Polymath".
+OBIETTIVO: Scrivere "THE POLYMATH BRIEF".
+DATA: {date}
+
+REGOLE:
+1. Basati sul testo fornito ("NOTIZIE GREZZE").
+2. Se il testo dice che non ci sono notizie, scrivi un report sarcastico che si lamenta della mancanza di segnale.
+3. Se ci sono notizie, usa il formato standard: 4 sezioni, Titolo, Fatti, Meccanismo.
+"""
+
+try:
+    client = Groq(api_key=GROQ_API_KEY)
+    completion = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": system_prompt.format(date=today)},
+            {"role": "user", "content": f"NOTIZIE GREZZE:\n{raw_context}"}
+        ],
+        temperature=0.3
+    )
+    report_content = completion.choices[0].message.content
+except Exception as e:
+    report_content = f"ERRORE AI: {str(e)}"
 
 # --- 3. PUBLISHING ---
 markdown_file = f"""---
@@ -89,3 +97,5 @@ if not os.path.exists("_posts"):
 filename = f"_posts/{today}-brief.md"
 with open(filename, "w", encoding='utf-8') as f:
     f.write(markdown_file)
+
+print("Script completato.")
