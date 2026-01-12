@@ -1,7 +1,6 @@
 import os
 import datetime
-import time
-from duckduckgo_search import DDGS
+import feedparser
 from groq import Groq
 
 # --- CONFIGURAZIONE ---
@@ -11,60 +10,81 @@ if not GROQ_API_KEY:
     print("ERRORE: Manca la GROQ_API_KEY.")
     exit(1)
 
-# --- 1. GATHERING (STEALTH MODE) ---
-print("Inizializzazione DuckDuckGo Stealth...")
-ddgs = DDGS()
-today = datetime.datetime.now().strftime("%Y-%m-%d")
+# --- 1. GATHERING (RSS PROTOCOL) ---
+# Usiamo fonti dirette che NON bloccano i bot.
+# Queste fonti coprono le 4 sezioni del Polymath Brief.
+feeds_map = {
+    "FRONTIERA_TECH": [
+        "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=5", # AI Papers
+        "http://export.arxiv.org/api/query?search_query=cat:physics&sortBy=submittedDate&sortOrder=descending&max_results=5" # Physics Papers
+    ],
+    "HARDWARE_CHIPS": [
+        "https://www.tomshardware.com/feeds/all", # Hardware News
+        "https://www.anandtech.com/rss/" # Deep Tech Analysis
+    ],
+    "GEOPOLITICA": [
+        "https://oilprice.com/rss/main", # Energy & Geopolitics (Cruciale)
+        "https://defence-blog.com/feed/" # Defense Tech
+    ],
+    "MACROECONOMIA": [
+        "https://www.cnbc.com/id/10000003/device/rss/rss.html", # World Economy
+        "https://cointelegraph.com/rss" # Crypto/Finance Frontier
+    ]
+}
 
-# Query semplificate per massimizzare i risultati
-queries = [
-    "physics breakthrough arxiv nature science", # Tolto "last 24h" per testare se trova qualcosa
-    "semiconductor technology news tsmc intel",
-    "submarine cables geopolitics internet",
-    "central bank digital currency news"
-]
-
+print("Avvio protocollo RSS Gathering...")
 raw_context = ""
 
-for query in queries:
-    print(f"--- Cercando: {query} ---")
-    try:
-        # backend="html" è più lento ma spesso aggira i blocchi anti-bot
-        # togliamo time_range per ora per assicurarci di trovare ALMENO qualcosa
-        results = ddgs.text(query, max_results=4, backend="html")
-        
-        found_for_query = False
-        if results:
-            for r in results:
-                print(f"Trovato: {r['title'][:30]}...") # Log per capire cosa trova
-                raw_context += f"\nTITOLO: {r['title']}\nSNIPPET: {r['body']}\nURL: {r['href']}\n"
-                found_for_query = True
-        
-        if not found_for_query:
-            print("Nessun risultato per questa query.")
+for category, urls in feeds_map.items():
+    print(f"\n--- SCANSIONE {category} ---")
+    raw_context += f"\n\n=== CATEGORIA: {category} ===\n"
+    
+    for url in urls:
+        try:
+            print(f"Leggendo: {url}...")
+            feed = feedparser.parse(url)
+            # Prendiamo solo le prime 3 notizie per feed per non intasare l'AI
+            for entry in feed.entries[:3]:
+                title = entry.title
+                # Pulizia sommaria del link e descrizione
+                link = entry.link
+                summary = entry.summary[:300] if hasattr(entry, 'summary') else "No summary"
+                
+                print(f"  -> Trovato: {title[:40]}...")
+                raw_context += f"- TITOLO: {title}\n  LINK: {link}\n  SUMMARY: {summary}\n"
+        except Exception as e:
+            print(f"Errore lettura feed {url}: {e}")
 
-        time.sleep(2) # Pausa più lunga per non sembrare un bot aggressivo
-
-    except Exception as e:
-        print(f"ERRORE RICERCA '{query}': {e}")
-
-# Se ancora vuoto, usiamo dati finti per testare almeno la generazione del sito
-if not raw_context or len(raw_context) < 50:
-    print("ATTENZIONE: Ricerca fallita o bloccata. Uso dati di fallback.")
-    raw_context = "NESSUNA NOTIZIA TROVATA DAL MOTORE DI RICERCA. IL SISTEMA DI GATHERING È STATO BLOCCATO."
+if len(raw_context) < 100:
+    raw_context = "ERRORE CRITICO: Nessun feed RSS è stato caricato. Genera un report di emergenza."
 
 # --- 2. ANALYSIS (GROQ) ---
-print(f"Input per AI (lungh: {len(raw_context)} chars). Generazione report...")
+today = datetime.datetime.now().strftime("%Y-%m-%d")
+print(f"\nGenerazione Report con AI (Input size: {len(raw_context)} chars)...")
 
 system_prompt = """
-SEI: "The Polymath".
-OBIETTIVO: Scrivere "THE POLYMATH BRIEF".
-DATA: {date}
+SEI: "The Polymath", analista di intelligence strategica.
+OBIETTIVO: Scrivere "THE POLYMATH BRIEF" del {date}.
 
-REGOLE:
-1. Basati sul testo fornito ("NOTIZIE GREZZE").
-2. Se il testo dice che non ci sono notizie, scrivi un report sarcastico che si lamenta della mancanza di segnale.
-3. Se ci sono notizie, usa il formato standard: 4 sezioni, Titolo, Fatti, Meccanismo.
+INPUT: Una lista di notizie grezze divise per categorie (RSS Feeds).
+
+REGOLE DI SCRITTURA:
+1. SELEZIONA SOLO IL MEGLIO: Hai molte notizie, scegline SOLO 1 per ogni sezione (le 4 sezioni standard). Scarta le banalità.
+2. STILE: Asettico, denso, alta competenza tecnica. Italiano professionale.
+3. FORMATO OBBLIGATORIO PER OGNI SEZIONE:
+   ## [NOME SEZIONE]
+   **Il Segnale:** [Titolo breve]
+   * **I Fatti:** [Cosa è successo]
+   * **Il Meccanismo:** [Analisi tecnica del PERCHÉ è importante]
+   * **Fonti:** [Inserisci il LINK originale fornito nel feed]
+
+LE 4 SEZIONI SONO:
+1. FRONTIERA HARD-TECH (Dagli Arxiv/Physics)
+2. HARDWARE & MACCHINE (Da Tom's Hardware/Anandtech)
+3. GEOPOLITICA & ENERGIA (Da OilPrice/Defence)
+4. RADAR SOCIALE & MACRO (Da CNBC/Cointelegraph)
+
+Se una sezione non ha notizie valide, scrivi "NESSUN SEGNALE RILEVATO".
 """
 
 try:
@@ -73,7 +93,7 @@ try:
         model="llama-3.3-70b-versatile",
         messages=[
             {"role": "system", "content": system_prompt.format(date=today)},
-            {"role": "user", "content": f"NOTIZIE GREZZE:\n{raw_context}"}
+            {"role": "user", "content": f"DATI RSS:\n{raw_context}"}
         ],
         temperature=0.3
     )
@@ -98,4 +118,4 @@ filename = f"_posts/{today}-brief.md"
 with open(filename, "w", encoding='utf-8') as f:
     f.write(markdown_file)
 
-print("Script completato.")
+print("Brief completato.")
