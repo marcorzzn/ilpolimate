@@ -9,9 +9,8 @@ import pytz
 
 # ================== CONFIGURAZIONE ==================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-# RIDOTTO DRASTICAMENTE PER EVITARE BLOCCHI IP (ArXiv banna sopra i 15)
-MAX_WORKERS = 10 
-LOOKBACK_HOURS = 48  # Finestra temporale ampia
+MAX_WORKERS = 10     # RIDOTTO a 10 per evitare che ArXiv/Nature ti blocchino l'IP
+LOOKBACK_HOURS = 48  # 48 ore per coprire anche notizie della notte precedente
 MAX_SECTION_CONTEXT = 60000
 
 if not GROQ_API_KEY:
@@ -173,7 +172,7 @@ CLUSTERS = {
 def fetch_feed(url):
     print(f"📡 Scaricando: {url}...")
     try:
-        # User Agent Standard per evitare blocchi (simula un browser reale)
+        # User Agent Standard per evitare blocchi
         d = feedparser.parse(url, agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         items = []
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -200,7 +199,7 @@ def fetch_feed(url):
                 elif hasattr(entry, 'description'): 
                     content = entry.description
                 
-                # Clean HTML
+                # Pulizia HTML Robusta
                 try:
                     soup = BeautifulSoup(content, "html.parser")
                     content = soup.get_text(separator=" ", strip=True)[:5000]
@@ -233,18 +232,23 @@ def analyze_cluster(cluster_key, info, raw_text, attempt=1):
     
     print(f"  > Tentativo {attempt} - Analisi AI su {cluster_key} ({len(raw_text)} chars)...")
     
+    # PROMPT BLINDATO PER LINK CLICCABILI
     system_prompt = f"""Sei un analista che deve scrivere da 2 a 4 notizie principali per il settore: {info['name']}
     
-    REGOLE OBBLIGATORIE:
-    1. Scrivi titoli in ITALIANO (Sentence case).
-    2. Inserisci la fonte cliccabile alla fine di ogni notizia.
-    3. Seleziona SOLO notizie rilevanti.
+    REGOLE DI FORMATTAZIONE OBBLIGATORIE:
+    1. TITOLI: In Italiano, solo la prima lettera maiuscola (Sentence case).
+    2. FONTI: Devi usare ESATTAMENTE questo formato Markdown per rendere i link cliccabili:
+       **Fonte:** [Vedi Fonte](URL_ORIGINALE)
+       
+       (Non scrivere mai l'URL nudo come 'https://...', usa sempre le parentesi [Testo](URL) per creare il link).
     
-    FORMATO OUTPUT:
-    ### [Titolo in Italiano]
-    [Analisi di 2-3 righe]
+    3. CONTENUTO: Seleziona solo notizie rilevanti tecnicamente.
     
-    Fonte: [Link](URL)
+    ESEMPIO DI OUTPUT CORRETTO:
+    ### Titolo della notizia in italiano
+    Qui scrivi l'analisi della notizia in 2 o 3 righe massimo.
+    
+    **Fonte:** [Vedi Fonte](https://www.esempio.com/news)
     """
     
     try:
@@ -252,16 +256,16 @@ def analyze_cluster(cluster_key, info, raw_text, attempt=1):
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "user", "content": f"{system_prompt}\n\nMATERIALE:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
+                {"role": "user", "content": f"{system_prompt}\n\nMATERIALE DA ANALIZZARE:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
             ],
-            temperature=0.3, # Abbassata per essere più precisi
+            temperature=0.3, # Bassa temperatura = più rispetto delle regole
             max_tokens=6000
         )
         
         result = completion.choices[0].message.content
         news_count = result.count("###")
         
-        # Retry logic leggera
+        # Retry logic se genera poco
         if news_count < 2 and attempt < 2:
             print(f"  ⚠️ Poche notizie ({news_count}), ritento...")
             time.sleep(2)
@@ -274,7 +278,7 @@ def analyze_cluster(cluster_key, info, raw_text, attempt=1):
         return ""
 
 # ================== MAIN ==================
-print("🚀 AVVIO POLIMATE (Fixed Version)...")
+print("🚀 AVVIO POLIMATE (Fixed Links Version)...")
 start_time = time.time()
 italian_date = get_italian_date()
 # Imposta timezone per il nome file
@@ -301,7 +305,7 @@ for key, info in CLUSTERS.items():
     else:
         print(f"  ❌ Nessun dato raccolto per questo cluster.")
     
-    # Pausa di cortesia tra i cluster per non sovraccaricare le API
+    # Pausa di sicurezza tra cluster
     time.sleep(5)
 
 # ================== SALVATAGGIO ==================
