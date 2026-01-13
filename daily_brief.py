@@ -5,27 +5,26 @@ import feedparser
 import concurrent.futures
 from groq import Groq
 
-# ================= CONFIGURAZIONE =================
+# ================== CONFIGURAZIONE ==================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-MAX_WORKERS = 20
-LOOKBACK_HOURS = 30
-MAX_SECTION_CONTEXT = 60000
+MAX_WORKERS = 50
+LOOKBACK_HOURS = 24
+MAX_SECTION_CONTEXT = 45000
 
 if not GROQ_API_KEY:
-    print("ERRORE: GROQ_API_KEY mancante")
-    exit(1)
+    raise RuntimeError("ERRORE: GROQ_API_KEY mancante")
 
-# ================= DATA IN ITALIANO =================
+# ================== DATA ITALIANA ==================
 def get_italian_date():
-    months = {
+    mesi = {
         1: "gennaio", 2: "febbraio", 3: "marzo", 4: "aprile",
         5: "maggio", 6: "giugno", 7: "luglio", 8: "agosto",
         9: "settembre", 10: "ottobre", 11: "novembre", 12: "dicembre"
     }
     now = datetime.datetime.now()
-    return f"{now.day} {months[now.month]} {now.year}"
+    return f"{now.day} {mesi[now.month]} {now.year}"
 
-# ================= FONTI =================
+# ================== CLUSTER COMPLETI ==================
 CLUSTERS = {
     "01_AI_RESEARCH": {
         "name": "INTELLIGENZA ARTIFICIALE",
@@ -33,9 +32,9 @@ CLUSTERS = {
         "urls": [
             "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
-            "https://www.csail.mit.edu/news/feed", 
-            "https://hai.stanford.edu/news/feed", 
-            "https://bair.berkeley.edu/blog/feed.xml", 
+            "https://www.csail.mit.edu/news/feed",
+            "https://hai.stanford.edu/news/feed",
+            "https://bair.berkeley.edu/blog/feed.xml",
             "https://deepmind.google/blog/rss.xml",
             "https://openai.com/blog/rss.xml",
             "https://research.google/blog/rss",
@@ -44,6 +43,7 @@ CLUSTERS = {
             "https://www.microsoft.com/en-us/research/feed/"
         ]
     },
+
     "02_QUANTUM": {
         "name": "FISICA DI FRONTIERA",
         "desc": "Calcolo quantistico e fisica.",
@@ -51,13 +51,14 @@ CLUSTERS = {
             "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=40",
             "https://www.nature.com/nphys.rss",
             "https://phys.org/rss-feed/physics-news/quantum-physics/",
-            "https://www.caltech.edu/c/news/rss", 
-            "https://ethz.ch/en/news-and-events/eth-news/news.rss", 
-            "https://qt.eu/feed/", 
+            "https://www.caltech.edu/c/news/rss",
+            "https://ethz.ch/en/news-and-events/eth-news/news.rss",
+            "https://qt.eu/feed/",
             "https://scitechdaily.com/tag/quantum-physics/feed/",
             "https://www.quantamagazine.org/feed/"
         ]
     },
+
     "03_MATH_FRONTIER": {
         "name": "MATEMATICA",
         "desc": "Lista Custom Utente.",
@@ -77,20 +78,22 @@ CLUSTERS = {
             "http://export.arxiv.org/api/query?search_query=cat:cs.GT&sortBy=submittedDate&sortOrder=descending&max_results=15"
         ]
     },
+
     "04_BIO_SYNTHETIC": {
         "name": "BIOLOGIA & BIOTECNOLOGIE",
         "desc": "Genomica, CRISPR.",
         "urls": [
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology",
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=genomics",
-            "https://www.nature.com/nbt.rss", 
-            "https://www.thelancet.com/rssfeed/lancet_current.xml", 
-            "https://www.cell.com/cell/current.rss", 
-            "https://hms.harvard.edu/news/rss", 
+            "https://www.nature.com/nbt.rss",
+            "https://www.thelancet.com/rssfeed/lancet_current.xml",
+            "https://www.cell.com/cell/current.rss",
+            "https://hms.harvard.edu/news/rss",
             "https://www.genengnews.com/feed/",
             "https://www.fiercebiotech.com/rss/xml"
         ]
     },
+
     "05_CYBER_WARFARE": {
         "name": "CYBER-WARFARE & INTELLIGENCE",
         "desc": "InfoSec, Zero-Day.",
@@ -100,12 +103,13 @@ CLUSTERS = {
             "https://krebsonsecurity.com/feed/",
             "https://www.mandiant.com/resources/blog/rss.xml",
             "https://unit42.paloaltonetworks.com/feed/",
-            "https://www.cisa.gov/uscert/ncas/alerts.xml", 
+            "https://www.cisa.gov/uscert/ncas/alerts.xml",
             "https://www.crowdstrike.com/blog/feed/",
             "https://www.darkreading.com/rss.xml",
             "https://www.sentinelone.com/blog/feed/"
         ]
     },
+
     "06_CHIP_FAB": {
         "name": "SILICIO & FONDERIE",
         "desc": "TSMC, ASML.",
@@ -113,12 +117,13 @@ CLUSTERS = {
             "https://semiengineering.com/feed/",
             "https://www.imec-int.com/en/rss",
             "https://www.semiconductors.org/feed/",
-            "https://www.digitimes.com/rss/daily.xml", 
+            "https://www.digitimes.com/rss/daily.xml",
             "https://semianalysis.com/feed/",
             "https://semiwiki.com/feed/",
             "https://news.mit.edu/rss/topic/engineering"
         ]
     },
+
     "07_CHIP_DESIGN": {
         "name": "HARDWARE",
         "desc": "GPU Design, HPC.",
@@ -126,58 +131,62 @@ CLUSTERS = {
             "https://spectrum.ieee.org/feeds/topic/semiconductors/rss",
             "https://www.anandtech.com/rss/",
             "https://www.tomshardware.com/feeds/all",
-            "https://www.servethehome.com/feed/", 
-            "https://chipsandcheese.com/feed/", 
-            "https://www.nextplatform.com/feed/" 
+            "https://www.servethehome.com/feed/",
+            "https://chipsandcheese.com/feed/",
+            "https://www.nextplatform.com/feed/"
         ]
     },
+
     "08_MATERIALS": {
         "name": "MATERIALI",
         "desc": "Batterie, Chimica.",
         "urls": [
             "https://chemrxiv.org/engage/chemrxiv/rss",
-            "https://www.anl.gov/rss/research-news/feed", 
+            "https://www.anl.gov/rss/research-news/feed",
             "https://www.nature.com/nmat.rss",
-            "https://cen.acs.org/rss/materials.xml", 
+            "https://cen.acs.org/rss/materials.xml",
             "https://battery-news.com/feed/",
             "https://onlinelibrary.wiley.com/feed/15214095/most-recent"
         ]
     },
+
     "09_SPACE_FRONTIER": {
         "name": "SPACE ECONOMY",
         "desc": "ESA, NASA.",
         "urls": [
             "https://spacenews.com/feed/",
             "https://www.esa.int/rssfeed/Our_Activities/Operations",
-            "https://www.jpl.nasa.gov/feeds/news/", 
+            "https://www.jpl.nasa.gov/feeds/news/",
             "https://blogs.nasa.gov/station/feed/",
             "https://spaceflightnow.com/feed/",
             "https://gsp.esa.int/documents/10180/0/rss",
             "https://www.cfa.harvard.edu/news/rss.xml"
         ]
     },
+
     "10_GEO_DEFENSE": {
         "name": "DIFESA",
         "desc": "Strategie militari.",
         "urls": [
             "https://rusi.org/rss.xml",
             "https://warontherocks.com/feed/",
-            "https://www.rand.org/news/politics-and-government.xml", 
-            "https://mwi.westpoint.edu/feed/", 
+            "https://www.rand.org/news/politics-and-government.xml",
+            "https://mwi.westpoint.edu/feed/",
             "https://www.defensenews.com/arc/outboundfeeds/rss/",
             "https://news.usni.org/feed",
-            "https://www.understandingwar.org/feeds.xml", 
+            "https://www.understandingwar.org/feeds.xml",
             "https://www.janes.com/feeds/news",
-            "https://www.darpa.mil/rss/news" 
+            "https://www.darpa.mil/rss/news"
         ]
     },
+
     "11_GEO_STRATEGY": {
         "name": "GEOPOLITICA & DIPLOMAZIA",
         "desc": "Analisi globale.",
         "urls": [
-            "https://www.foreignaffairs.com/rss.xml", 
-            "https://www.chathamhouse.org/rss/research/all", 
-            "https://www.cfr.org/feed/all", 
+            "https://www.foreignaffairs.com/rss.xml",
+            "https://www.chathamhouse.org/rss/research/all",
+            "https://www.cfr.org/feed/all",
             "https://www.aspistrategist.org.au/feed/",
             "https://jamestown.org/feed/",
             "https://www.csis.org/rss/analysis",
@@ -186,12 +195,13 @@ CLUSTERS = {
             "https://legrandcontinent.eu/fr/feed/"
         ]
     },
+
     "12_CENTRAL_BANKS": {
         "name": "MACROECONOMIA & CAPITALE",
         "desc": "Banche Centrali.",
         "urls": [
             "https://www.bis.org/doclist/research.rss",
-            "https://www.nber.org/rss/new.xml", 
+            "https://www.nber.org/rss/new.xml",
             "https://www.federalreserve.gov/feeds/feds_rss.xml",
             "https://libertystreeteconomics.newyorkfed.org/feed/",
             "https://www.ecb.europa.eu/rss/wppub.xml",
@@ -201,6 +211,7 @@ CLUSTERS = {
             "https://www.bruegel.org/rss"
         ]
     },
+
     "13_GLOBAL_ENERGY": {
         "name": "ENERGIA & RISORSE",
         "desc": "Mercati energetici.",
@@ -208,7 +219,7 @@ CLUSTERS = {
             "https://oilprice.com/rss/main",
             "https://www.oxfordenergy.org/feed/",
             "https://iea.org/rss/news",
-            "https://www.nrel.gov/news/rss.xml", 
+            "https://www.nrel.gov/news/rss.xml",
             "https://www.world-nuclear-news.org/RSS/WNN-News.xml",
             "https://gcaptain.com/feed/",
             "https://news.mit.edu/rss/topic/energy"
@@ -216,39 +227,35 @@ CLUSTERS = {
     }
 }
 
-# ================= RACCOLTA FEED =================
+# ================== ENGINE DI RACCOLTA ==================
 def fetch_feed(url):
     try:
-        d = feedparser.parse(url)
+        d = feedparser.parse(url, agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) PolymathBot/3.0")
         items = []
-
         now = datetime.datetime.now(datetime.timezone.utc)
         cutoff = now - datetime.timedelta(hours=LOOKBACK_HOURS)
-
+        
         for entry in d.entries:
             pub_date = None
-            if hasattr(entry, "published_parsed") and entry.published_parsed:
+            if hasattr(entry, 'published_parsed') and entry.published_parsed:
                 pub_date = datetime.datetime(*entry.published_parsed[:6], tzinfo=datetime.timezone.utc)
-            elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
+            elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
                 pub_date = datetime.datetime(*entry.updated_parsed[:6], tzinfo=datetime.timezone.utc)
-
+            
             if not pub_date or pub_date > cutoff:
-                content = ""
-                if hasattr(entry, "summary"):
+                content = "No content"
+                if hasattr(entry, 'summary'): 
                     content = entry.summary
-                elif hasattr(entry, "content"):
+                elif hasattr(entry, 'content'): 
                     content = entry.content[0].value
-
-                content = content.replace("<p>", "").replace("</p>", "").strip()[:3000]
-                source = d.feed.get("title", "Fonte")
+                elif hasattr(entry, 'description'): 
+                    content = entry.description
+                
+                content = content.replace("<p>", "").replace("</p>", "").replace("<div>", "").strip()[:3000]
+                source = d.feed.get('title', 'Fonte')
                 link = entry.link
-
-                items.append(
-                    f"SRC: {source}\n"
-                    f"LINK: {link}\n"
-                    f"TITLE: {entry.title}\n"
-                    f"TXT: {content}\n"
-                )
+                items.append(f"SRC: {source}\nLINK: {link}\nTITLE: {entry.title}\nTXT: {content}\n")
+        
         return items
     except:
         return []
@@ -257,95 +264,108 @@ def get_cluster_data(urls):
     data = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         results = executor.map(fetch_feed, urls)
-        for r in results:
-            data.extend(r)
+        for res in results:
+            data.extend(res)
     return data
 
-# ================= ANALISI AI =================
-def analyze_cluster(info, raw_text):
-    if not raw_text:
+# ================== ANALISTA AI ==================
+def analyze_cluster(cluster_key, info, raw_text):
+    if not raw_text: 
         return ""
-
-    system_prompt = f"""
-SEI: Il Polimate
+    
+    print(f"  > Analisi {cluster_key} ({len(raw_text)} chars)...")
+    
+    system_prompt = f"""SEI: "Il Polimate" - analista strategico.
 SETTORE: {info['name']}
 
-OBIETTIVO:
-Produrre una rassegna giornalistica tecnica e strategica di altissima qualità.
+OBIETTIVO: Estrarre MINIMO 2-3 notizie rilevanti per settore. Non essere troppo selettivo.
+Se ci sono sviluppi tecnici o ricerche recenti, INCLUDILI anche se non sono clamorosi.
 
-TITOLI:
-- Italiano corretto
-- SOLO la prima parola con iniziale maiuscola
-- Nomi propri ammessi
-- VIETATO lo stile Title Case inglese
+REGOLE DI FORMATTAZIONE ITALIANE:
+1. Titoli in stile italiano: SOLO la prima lettera maiuscola + nomi propri.
+   ✓ CORRETTO: "Nuova scoperta sui superconduttori ad alta temperatura"
+   ✗ SBAGLIATO: "Nuova Scoperta Sui Superconduttori Ad Alta Temperatura"
 
-QUANTITÀ:
-- Almeno 3 notizie
-- Idealmente 4–5 se possibile
-- Vietato restituire sezioni quasi vuote
+2. Link SEMPRE su riga separata dopo il paragrafo:
+   
+   Fonte: https://example.com/article
 
-LINK:
-- Solo Markdown: [Nome fonte](https://...)
-- Vietati URL nudi
+3. VIETATO usare <hr> o altre separazioni grafiche.
 
-FORMATO OBBLIGATORIO:
+4. NON aggiungere frasi introduttive tipo "Ecco le notizie..."
 
-### Titolo in italiano
+FORMATO OUTPUT (ripeti per ogni notizia):
+### [Titolo con capitalizzazione italiana]
+[Analisi tecnica del contenuto in 3-4 righe.]
 
-Paragrafetto di analisi di 4–6 righe. Qui il testo FINISCE.
+Fonte: [URL completo]
 
-Fonte: [Nome della fonte](URL)
-
-Dopo "Fonte:" si va subito a capo e si inizia una nuova notizia.
 """
+    
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"INPUT:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
+            ],
+            temperature=0.35,
+            max_tokens=7000
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        print(f"Errore {cluster_key}: {e}")
+        return ""
 
-    client = Groq(api_key=GROQ_API_KEY)
-    completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": raw_text[:MAX_SECTION_CONTEXT]}
-        ],
-        temperature=0.25,
-        max_tokens=7000
-    )
-
-    return completion.choices[0].message.content.strip()
-
-# ================= MAIN =================
-print("Avvio generazione rassegna")
-start = time.time()
-
+# ================== MAIN SEQUENCER ==================
+print("Avvio IL POLIMATE - Generazione rassegna...\n")
+start_time = time.time()
 italian_date = get_italian_date()
 today_iso = datetime.datetime.now().strftime("%Y-%m-%d")
+
 full_report = ""
 
-for _, info in CLUSTERS.items():
-    raw_data = get_cluster_data(info["urls"])
+for key, info in CLUSTERS.items():
+    print(f"\n--- Cluster: {info['name']} ---")
+    raw_data = get_cluster_data(info['urls'])
+    
     if raw_data:
-        analysis = analyze_cluster(info, "\n---\n".join(raw_data))
-        if analysis:
+        raw_text = "\n---\n".join(raw_data)
+        analysis = analyze_cluster(key, info, raw_text)
+        
+        if analysis and len(analysis) > 50:
             full_report += f"\n\n## {info['name']}\n\n{analysis}\n"
-    time.sleep(25)
+        else:
+            print("  > Nessun contenuto generato.")
+    else:
+        print("  > Nessun dato grezzo.")
+    
+    print("  > Cooling down (35s)...")
+    time.sleep(35)
 
-# ================= SALVATAGGIO =================
-os.makedirs("_posts", exist_ok=True)
+# ================== SALVATAGGIO ==================
+if not os.path.exists("_posts"):
+    os.makedirs("_posts")
+
 filename = f"_posts/{today_iso}-brief.md"
 
-markdown = f"""---
-title: "La Rassegna del {italian_date}"
+markdown_file = f"""---
+title: "La rassegna del {italian_date}"
 date: {today_iso}
 layout: post
+excerpt: "Analisi strategica quotidiana."
 ---
 
 {full_report}
 """
 
-if len(full_report) > 200:
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(markdown)
-    print(f"File generato: {filename}")
+if len(full_report) > 100:
+    with open(filename, "w", encoding='utf-8') as f:
+        f.write(markdown_file)
+    print(f"\n Dossier salvato: {filename}")
 else:
-    print("ATTENZIONE: contenuto insufficiente")
+    print("\n ATTENZIONE: Report vuoto o insufficiente.")
 
-print(f"Tempo totale: {(time.time() - start) / 60:.1f} minuti")
+duration = (time.time() - start_time) / 60
+print(f"⏱️ Tempo totale: {duration:.1f} minuti.")
