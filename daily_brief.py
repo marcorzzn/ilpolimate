@@ -8,7 +8,7 @@ from groq import Groq
 # ================== CONFIGURAZIONE ==================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 MAX_WORKERS = 50
-LOOKBACK_HOURS = 72  # ⬆️⬆️ 3 GIORNI per avere MOLTO materiale
+LOOKBACK_HOURS = 30  # ⬆️⬆️ 3 GIORNI per avere MOLTO materiale
 MAX_SECTION_CONTEXT = 60000
 
 if not GROQ_API_KEY:
@@ -301,10 +301,10 @@ REGOLE CAPITALIZZAZIONE ITALIANA:
 - "Nuova vulnerabilità" (NON "Nuova Vulnerabilità")
 - "Google presenta" (NON "Google Presenta")  
 - "Microsoft investe" (NON "Microsoft Investe")
-- Ma: Google, Microsoft, AI, GPU (nomi propri e sigle sempre maiuscoli)
+- Ma: Google, Microsoft, AI, GPU, Bill Gates (nomi propri e sigle sempre maiuscoli)
 
 FORMATO:
-### [titolo minuscolo tranne prima lettera + nomi propri]
+### [REGOLE CAPITALIZZAZIONE ITALIANA]
 [2-3 righe analisi]
 
 Fonte: [URL]
