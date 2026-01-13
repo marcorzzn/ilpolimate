@@ -8,8 +8,8 @@ from groq import Groq
 # ================== CONFIGURAZIONE ==================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 MAX_WORKERS = 50
-LOOKBACK_HOURS = 30  # ⬆️ ALZATO A 30H per avere più materiale
-MAX_SECTION_CONTEXT = 50000  # ⬆️ ALZATO per leggere più contenuti
+LOOKBACK_HOURS = 72  # ⬆️⬆️ 3 GIORNI per avere MOLTO materiale
+MAX_SECTION_CONTEXT = 60000
 
 if not GROQ_API_KEY:
     raise RuntimeError("ERRORE: GROQ_API_KEY mancante")
@@ -242,7 +242,6 @@ def fetch_feed(url):
             elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
                 pub_date = datetime.datetime(*entry.updated_parsed[:6], tzinfo=datetime.timezone.utc)
             
-            # Prendiamo tutto se non ha data O se è recente
             if not pub_date or pub_date > cutoff:
                 content = "No content"
                 if hasattr(entry, 'summary'): 
@@ -252,14 +251,13 @@ def fetch_feed(url):
                 elif hasattr(entry, 'description'): 
                     content = entry.description
                 
-                content = content.replace("<p>", "").replace("</p>", "").replace("<div>", "").strip()[:4000]
+                content = content.replace("<p>", "").replace("</p>", "").replace("<div>", "").strip()[:5000]
                 source = d.feed.get('title', 'Fonte')
                 link = entry.link
                 items.append(f"SRC: {source}\nLINK: {link}\nTITLE: {entry.title}\nTXT: {content}\n")
         
         return items
     except Exception as e:
-        print(f"    Errore feed: {str(e)[:100]}")
         return []
 
 def get_cluster_data(urls):
@@ -270,128 +268,141 @@ def get_cluster_data(urls):
             data.extend(res)
     return data
 
-# ================== ANALISTA AI (PROMPT MIGLIORATO) ==================
-def analyze_cluster(cluster_key, info, raw_text):
+# ================== ANALISTA AI CON RETRY ==================
+def analyze_cluster(cluster_key, info, raw_text, attempt=1):
     if not raw_text: 
         return ""
     
-    print(f"  > Analisi {cluster_key} ({len(raw_text)} chars)...")
+    print(f"  > Tentativo {attempt} - Analisi {cluster_key} ({len(raw_text)} chars)...")
     
-    # ⚠️ PROMPT RINFORZATO PER QUANTITÀ E FORMATTAZIONE
-    system_prompt = f"""SEI: "Il Polimate" - analista strategico senior.
+    # PROMPT ULTRA-SPECIFICO CON ESEMPI
+    system_prompt = f"""Sei un analista che deve scrivere ESATTAMENTE 3 notizie per il settore: {info['name']}
 
-SETTORE: {info['name']}
+ESEMPIO DI OUTPUT RICHIESTO (copia questo stile):
 
-🎯 OBIETTIVO PRIMARIO: 
-Devi OBBLIGATORIAMENTE estrarre MINIMO 3 NOTIZIE per questo settore.
-Se non ci sono 3 grosse scoperte, includi anche:
-- Ricerche preliminari
-- Aggiornamenti incrementali  
-- Paper tecnici recenti
-- Annunci di prodotto
-- Policy changes
+### Nuova vulnerabilità scoperta nei sistemi di machine learning
+Ricercatori di Stanford hanno identificato una falla critica che permette di manipolare output di modelli linguistici. Il problema riguarda il layer di attenzione in architetture transformer. Patch disponibile entro febbraio.
 
-NON essere selettivo. PRIORITÀ = QUANTITÀ.
+Fonte: https://hai.stanford.edu/news/security-flaw
 
-📝 REGOLE DI FORMATTAZIONE (ITALIANE):
+### Google presenta framework per training distribuito
+Il nuovo sistema riduce i tempi di addestramento del 40% su cluster GPU. Utilizza tecniche di parallelizzazione dinamica e ottimizzazione della memoria. Release pubblica prevista Q2 2026.
 
-1. TITOLI - Capitalizzazione italiana standard:
-   ✅ CORRETTO: "Scoperta una nuova vulnerabilità in sistemi AI"
-   ✅ CORRETTO: "Microsoft annuncia framework per machine learning"  
-   ✅ CORRETTO: "La NASA testa propulsori al plasma"
-   ❌ SBAGLIATO: "Scoperta Una Nuova Vulnerabilità In Sistemi AI"
-   
-   REGOLA: Solo prima lettera maiuscola + nomi propri (NASA, Microsoft, AI, ecc.)
+Fonte: https://research.google/blog/distributed-training
 
-2. LINK - SEMPRE su riga nuova dopo paragrafo:
-   [paragrafo testo]
-   
-   Fonte: https://example.com
+### Microsoft investe in startup europea di AI etica
+Accordo da 50 milioni per sviluppare sistemi di auditing automatico. Focus su bias detection e trasparenza algoritmica. Primo prodotto atteso entro 6 mesi.
 
-3. NO separatori grafici, NO frasi introduttive.
+Fonte: https://microsoft.com/news/ai-ethics-investment
 
-4. ANALISI: 2-4 righe tecniche per notizia.
+---
 
-OUTPUT RICHIESTO (minimo 3 blocchi così):
+REGOLE CAPITALIZZAZIONE ITALIANA:
+- "Nuova vulnerabilità" (NON "Nuova Vulnerabilità")
+- "Google presenta" (NON "Google Presenta")  
+- "Microsoft investe" (NON "Microsoft Investe")
+- Ma: Google, Microsoft, AI, GPU (nomi propri e sigle sempre maiuscoli)
 
-### [Titolo capitalizzazione italiana]
-[Analisi di 2-4 righe sul contenuto tecnico della notizia.]
-
-Fonte: [URL completo]
-
-### [Secondo titolo capitalizzazione italiana]
-[Altra analisi...]
+FORMATO:
+### [titolo minuscolo tranne prima lettera + nomi propri]
+[2-3 righe analisi]
 
 Fonte: [URL]
 
-### [Terzo titolo...]
-[Altra analisi...]
+IMPORTANTE: Devi produrre ESATTAMENTE 3 blocchi come sopra. Se il materiale è scarso, includi anche notizie minori ma tecnicamente rilevanti.
 
-Fonte: [URL]
+MATERIALE DA ANALIZZARE:
+{raw_text[:MAX_SECTION_CONTEXT]}
 
-IMPORTANTE: Se il materiale fornito è scarso, estrai COMUNQUE almeno 2-3 notizie anche se minori.
-"""
+RISPONDI ORA CON 3 NOTIZIE:"""
     
     try:
         client = Groq(api_key=GROQ_API_KEY)
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"MATERIALE DA ANALIZZARE:\n\n{raw_text[:MAX_SECTION_CONTEXT]}"}
+                {"role": "user", "content": system_prompt}
             ],
-            temperature=0.4,  # ⬆️ Alzato per essere meno restrittivo
-            max_tokens=8000   # ⬆️ Alzato per contenuto più lungo
+            temperature=0.5,
+            max_tokens=8000
         )
         
         result = completion.choices[0].message.content
         
-        # ✅ VERIFICA QUANTITÀ
+        # ✅ CONTA NOTIZIE
         news_count = result.count("###")
-        if news_count < 2:
-            print(f"  ⚠️ Solo {news_count} notizie trovate (target: 3+)")
-        else:
-            print(f"  ✅ {news_count} notizie estratte")
-            
+        print(f"  📊 Notizie generate: {news_count}")
+        
+        # 🔄 RETRY SE TROPPO POCHE
+        if news_count < 2 and attempt < 2:
+            print(f"  ⚠️ Insufficiente, ritento...")
+            time.sleep(5)
+            return analyze_cluster(cluster_key, info, raw_text, attempt + 1)
+        
+        # 📝 MOSTRA PRIME 500 CHAR per debug
+        print(f"  📄 Preview: {result[:500]}...")
+        
         return result
         
     except Exception as e:
-        print(f"  ❌ Errore {cluster_key}: {e}")
+        print(f"  ❌ Errore: {e}")
         return ""
 
 # ================== MAIN SEQUENCER ==================
-print("🚀 Avvio IL POLIMATE - Generazione rassegna...\n")
+print("🚀 IL POLIMATE - Versione DEBUG\n")
 start_time = time.time()
 italian_date = get_italian_date()
 today_iso = datetime.datetime.now().strftime("%Y-%m-%d")
 
 full_report = ""
 total_news = 0
+stats = {}
 
 for key, info in CLUSTERS.items():
-    print(f"\n{'='*60}")
-    print(f"📂 Cluster: {info['name']}")
-    print(f"{'='*60}")
+    print(f"\n{'='*70}")
+    print(f"📂 [{key}] {info['name']}")
+    print(f"{'='*70}")
     
+    # RACCOGLI DATI
     raw_data = get_cluster_data(info['urls'])
-    print(f"  📊 Raccolti {len(raw_data)} items da feed")
+    print(f"  📥 Feed raccolti: {len(raw_data)} items")
     
-    if raw_data:
-        raw_text = "\n---\n".join(raw_data)
-        analysis = analyze_cluster(key, info, raw_text)
-        
-        if analysis and len(analysis) > 100:
-            news_count = analysis.count("###")
-            total_news += news_count
-            full_report += f"\n\n## {info['name']}\n\n{analysis}\n"
-            print(f"  ✅ Sezione aggiunta ({news_count} notizie)")
-        else:
-            print("  ⚠️ Analisi insufficiente o vuota")
+    if len(raw_data) == 0:
+        print(f"  ⚠️ NESSUN DATO - Possibile problema feed RSS")
+        stats[key] = 0
+        continue
+    
+    # MOSTRA PRIMI 3 TITOLI per verifica
+    for i, item in enumerate(raw_data[:3]):
+        title_line = [line for line in item.split('\n') if line.startswith('TITLE:')]
+        if title_line:
+            print(f"    - {title_line[0][:80]}...")
+    
+    # ANALIZZA
+    raw_text = "\n---\n".join(raw_data)
+    analysis = analyze_cluster(key, info, raw_text)
+    
+    if analysis and len(analysis) > 100:
+        news_count = analysis.count("###")
+        total_news += news_count
+        stats[key] = news_count
+        full_report += f"\n\n## {info['name']}\n\n{analysis}\n"
+        print(f"  ✅ Sezione completata: {news_count} notizie")
     else:
-        print("  ❌ Nessun dato raccolto dai feed")
+        print(f"  ❌ Analisi fallita o vuota")
+        stats[key] = 0
     
-    print("  ⏳ Pausa 30s...")
-    time.sleep(30)
+    print("  ⏳ Pausa 25s...")
+    time.sleep(25)
+
+# ================== REPORT FINALE ==================
+print(f"\n{'='*70}")
+print("📊 STATISTICHE FINALI")
+print(f"{'='*70}")
+for key, count in stats.items():
+    status = "✅" if count >= 2 else "⚠️" if count == 1 else "❌"
+    print(f"{status} {key}: {count} notizie")
+print(f"\n🎯 TOTALE: {total_news} notizie generate")
 
 # ================== SALVATAGGIO ==================
 if not os.path.exists("_posts"):
@@ -399,8 +410,7 @@ if not os.path.exists("_posts"):
 
 filename = f"_posts/{today_iso}-brief.md"
 
-# ✅ EXCERPT GENERICO (NON la prima frase)
-excerpt = f"Analisi strategica di {total_news} sviluppi tecnico-scientifici da 13 settori: AI, quantum computing, cyber-security, chip, biotecnologie, energia e geopolitica."
+excerpt = f"Panoramica giornaliera su AI, quantum computing, cybersecurity, semiconduttori, biotech, difesa ed energia."
 
 markdown_file = f"""---
 title: "La rassegna del {italian_date}"
@@ -412,15 +422,8 @@ excerpt: "{excerpt}"
 {full_report}
 """
 
-if len(full_report) > 200:
-    with open(filename, "w", encoding='utf-8') as f:
-        f.write(markdown_file)
-    print(f"\n{'='*60}")
-    print(f"✅ DOSSIER SALVATO: {filename}")
-    print(f"📊 Totale notizie: {total_news}")
-    print(f"{'='*60}")
-else:
-    print("\n⚠️ ATTENZIONE: Report troppo scarno, non salvato.")
+with open(filename, "w", encoding='utf-8') as f:
+    f.write(markdown_file)
 
-duration = (time.time() - start_time) / 60
-print(f"⏱️ Tempo totale: {duration:.1f} minuti.\n")
+print(f"\n💾 File salvato: {filename}")
+print(f"⏱️ Tempo: {(time.time() - start_time) / 60:.1f} min\n")
