@@ -8,8 +8,8 @@ from groq import Groq
 # --- CONFIGURAZIONE STRATEGICA ---
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 MAX_WORKERS = 20            
-LOOKBACK_HOURS = 30         # Finestra ampia per catturare i segnali globali
-MAX_SECTION_CONTEXT = 50000 
+LOOKBACK_HOURS = 40         # Copertura globale garantita
+MAX_SECTION_CONTEXT = 55000 
 
 if not GROQ_API_KEY:
     print("ERRORE CRITICO: Manca la GROQ_API_KEY.")
@@ -24,11 +24,11 @@ def get_italian_date():
     now = datetime.datetime.now()
     return f"{now.day} {months[now.month]} {now.year}"
 
-# --- 1. FONTI D'ELITE (IL RADAR) ---
+# --- 1. FONTI D'ELITE (ARSENALE COMPLETO) ---
 CLUSTERS = {
     "01_AI_RESEARCH": {
         "name": "INTELLIGENZA ARTIFICIALE",
-        "desc": "Breakthroughs tecnici prima che diventino prodotti.",
+        "desc": "Breakthroughs tecnici e nuovi paradigmi.",
         "urls": [
             "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
@@ -45,9 +45,9 @@ CLUSTERS = {
     },
     "02_QUANTUM": {
         "name": "FISICA DI FRONTIERA",
-        "desc": "La scienza che renderà obsoleta l'informatica attuale.",
+        "desc": "Calcolo quantistico e fisica dei materiali.",
         "urls": [
-            "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=30",
+            "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=40",
             "https://www.nature.com/nphys.rss",
             "https://phys.org/rss-feed/physics-news/quantum-physics/",
             "https://www.caltech.edu/c/news/rss", 
@@ -57,35 +57,28 @@ CLUSTERS = {
             "https://www.quantamagazine.org/feed/"
         ]
     },
-    "03_CRYPTO_MATH": {
-        "name": "CRITTOGRAFIA & MATEMATICA",
-        "desc": "Le fondamenta invisibili della sicurezza futura.",
+    "03_MATH_FRONTIER": {
+        "name": "MATEMATICA",
+        "desc": "Ottimizzazione, Analisi Numerica, Complessità, Crypto.",
         "urls": [
-            "https://eprint.iacr.org/rss/rss.xml", 
+            "https://eprint.iacr.org/rss/rss.xml",
             "https://blog.cryptographyengineering.com/feed/",
             "https://research.chain.link/feed.xml",
-            "https://news.mit.edu/rss/topic/mathematics"
-            "https://sinews.siam.org/rss/sn_rss.aspx", 
-            "https://rss.ams.org/math-in-the-media.xml", 
-            "http://export.arxiv.org/api/query?search_query=cat:math.NA&sortBy=submittedDate&sortOrder=descending&max_results=20", # Numerical Analysis (Simulazioni)
-            "http://export.arxiv.org/api/query?search_query=cat:math.OC&sortBy=submittedDate&sortOrder=descending&max_results=20", # Optimization & Control (Il motore dell'AI)
-            "http://export.arxiv.org/api/query?search_query=cat:math.DS&sortBy=submittedDate&sortOrder=descending&max_results=15", # Dynamical Systems (Caos, Clima)
+            "https://news.mit.edu/rss/topic/mathematics",
+            "https://sinews.siam.org/rss/sn_rss.aspx",
+            "https://rss.ams.org/math-in-the-media.xml",
+            "http://export.arxiv.org/api/query?search_query=cat:math.NA&sortBy=submittedDate&sortOrder=descending&max_results=20", # Numerical Analysis
+            "http://export.arxiv.org/api/query?search_query=cat:math.OC&sortBy=submittedDate&sortOrder=descending&max_results=20", # Optimization & Control
+            "http://export.arxiv.org/api/query?search_query=cat:math.DS&sortBy=submittedDate&sortOrder=descending&max_results=15", # Dynamical Systems
             "http://export.arxiv.org/api/query?search_query=cat:math.ST&sortBy=submittedDate&sortOrder=descending&max_results=15", # Statistics Theory
-            "https://www.quantamagazine.org/feed/", # Il miglior giornalismo matematico al mondo. Visione pura.
-            "https://www.santafe.edu/news/rss", # Santa Fe Institute: Il tempio della "Complexity Science" (Caos, Mercati, Biologia).
-            # Optimization & Control: Il "cervello" dietro AI, Logistica globale e Finanza.
-            "http://export.arxiv.org/api/query?search_query=cat:math.OC&sortBy=submittedDate&sortOrder=descending&max_results=20",
-            # Numerical Analysis: La matematica delle simulazioni (Meteo, Aerodinamica, Crash test).
-            "http://export.arxiv.org/api/query?search_query=cat:math.NA&sortBy=submittedDate&sortOrder=descending&max_results=20",
-            # Dynamical Systems: Teoria del Caos e stabilità dei sistemi.
-            "http://export.arxiv.org/api/query?search_query=cat:math.DS&sortBy=submittedDate&sortOrder=descending&max_results=15",
-            # Game Theory: Strategia decisionale, Aste, Crypto-economics.
-            "http://export.arxiv.org/api/query?search_query=cat:cs.GT&sortBy=submittedDate&sortOrder=descending&max_results=15",
+            "https://www.quantamagazine.org/feed/",
+            "https://www.santafe.edu/news/rss",
+            "http://export.arxiv.org/api/query?search_query=cat:cs.GT&sortBy=submittedDate&sortOrder=descending&max_results=15" # Game Theory
         ]
     },
     "04_BIO_SYNTHETIC": {
-        "name": "BIOLOGIA & MED-TECH",
-        "desc": "Riscrivere il codice della vita.",
+        "name": "BIOLOGIA E BIOTECNOLOGIE",
+        "desc": "Genomica, CRISPR, Biotech.",
         "urls": [
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology",
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=genomics",
@@ -99,7 +92,7 @@ CLUSTERS = {
     },
     "05_CYBER_WARFARE": {
         "name": "CYBER-WARFARE & INTELLIGENCE",
-        "desc": "Il campo di battaglia invisibile.",
+        "desc": "Minacce APT, Zero-Day, InfoSec.",
         "urls": [
             "https://googleprojectzero.blogspot.com/feeds/posts/default",
             "https://threatpost.com/feed/",
@@ -114,7 +107,7 @@ CLUSTERS = {
     },
     "06_CHIP_FAB": {
         "name": "SILICIO & FONDERIE",
-        "desc": "Dove si fabbrica la potenza di calcolo mondiale.",
+        "desc": "TSMC, ASML, Supply Chain.",
         "urls": [
             "https://semiengineering.com/feed/",
             "https://www.imec-int.com/en/rss",
@@ -126,8 +119,8 @@ CLUSTERS = {
         ]
     },
     "07_CHIP_DESIGN": {
-        "name": "ARCHITETTURE HARDWARE",
-        "desc": "Il design dei cervelli elettronici del futuro.",
+        "name": "HARDWARE",
+        "desc": "GPU Design, HPC, Neuromorphic.",
         "urls": [
             "https://spectrum.ieee.org/feeds/topic/semiconductors/rss",
             "https://www.anandtech.com/rss/",
@@ -139,7 +132,7 @@ CLUSTERS = {
     },
     "08_MATERIALS": {
         "name": "MATERIALI",
-        "desc": "La fisica che abilita le nuove tecnologie.",
+        "desc": "Batterie, Superconduttori, Chimica.",
         "urls": [
             "https://chemrxiv.org/engage/chemrxiv/rss",
             "https://www.anl.gov/rss/research-news/feed", 
@@ -151,7 +144,7 @@ CLUSTERS = {
     },
     "09_SPACE_FRONTIER": {
         "name": "SPACE ECONOMY",
-        "desc": "L'infrastruttura orbitale e interplanetaria.",
+        "desc": "Infrastruttura orbitale, ESA, NASA.",
         "urls": [
             "https://spacenews.com/feed/",
             "https://www.esa.int/rssfeed/Our_Activities/Operations",
@@ -164,7 +157,7 @@ CLUSTERS = {
     },
     "10_GEO_DEFENSE": {
         "name": "IL GRANDE GIOCO (DIFESA)",
-        "desc": "Strategie militari e nuovi equilibri di forza.",
+        "desc": "Strategie militari, DARPA, RAND.",
         "urls": [
             "https://rusi.org/rss.xml",
             "https://warontherocks.com/feed/",
@@ -179,7 +172,7 @@ CLUSTERS = {
     },
     "11_GEO_STRATEGY": {
         "name": "GEOPOLITICA & DIPLOMAZIA",
-        "desc": "Capire le mosse delle nazioni prima che accadano.",
+        "desc": "Analisi globale, Think Tanks.",
         "urls": [
             "https://www.foreignaffairs.com/rss.xml", 
             "https://www.chathamhouse.org/rss/research/all", 
@@ -194,7 +187,7 @@ CLUSTERS = {
     },
     "12_CENTRAL_BANKS": {
         "name": "MACROECONOMIA & CAPITALE",
-        "desc": "I flussi che muovono il mondo reale.",
+        "desc": "Banche Centrali, NBER, FMI.",
         "urls": [
             "https://www.bis.org/doclist/research.rss",
             "https://www.nber.org/rss/new.xml", 
@@ -209,7 +202,7 @@ CLUSTERS = {
     },
     "13_GLOBAL_ENERGY": {
         "name": "ENERGIA & RISORSE",
-        "desc": "Il motore fisico dell'economia globale.",
+        "desc": "Mercati energetici, Nucleare, Rinnovabili.",
         "urls": [
             "https://oilprice.com/rss/main",
             "https://www.oxfordenergy.org/feed/",
@@ -225,7 +218,7 @@ CLUSTERS = {
 # --- 2. ENGINE DI RACCOLTA (STEALTH MODE) ---
 def fetch_feed(url):
     try:
-        # Si finge un browser per accedere alle fonti più esclusive
+        # User Agent simulato come Browser Reale per evitare blocchi IP
         d = feedparser.parse(url, agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         items = []
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -238,7 +231,7 @@ def fetch_feed(url):
             elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
                 pub_date = datetime.datetime(*entry.updated_parsed[:6], tzinfo=datetime.timezone.utc)
             
-            # Filtro temporale intelligente
+            # FILTRO PERMISSIVO: Se la data manca, includiamo (meglio un falso positivo che un buco)
             if not pub_date or pub_date > cutoff:
                 content = "No content"
                 if hasattr(entry, 'summary'): content = entry.summary
@@ -261,38 +254,38 @@ def get_cluster_data(urls):
             data.extend(res)
     return data
 
-# --- 3. IL CERVELLO VISIONARIO (IL VERO SEGRETO) ---
+# --- 3. IL CERVELLO VISIONARIO (IBRIDO) ---
 def analyze_cluster(cluster_key, info, raw_text):
     if not raw_text: return ""
     
-    print(f"  > Analisi Visionaria {cluster_key} ({len(raw_text)} chars)...")
+    print(f"  > Analisi {cluster_key} ({len(raw_text)} chars)...")
     
-    # PROMPT "EFFETTO ORACOLO"
+    # PROMPT IBRIDO: "Cerca il Miracolo, ma accetta il Progresso"
     system_prompt = f"""
-    SEI: "Il Polimate". 
-    SETTORE: {info['name']} ({info['desc']})
+    SEI: "Il Polimate". SETTORE: {info['name']}
     
-    MISSIONE: Trasformare il lettore in un Polimate che anticipa il futuro.
-    Non sei un aggregatore di news. Sei un cacciatore di SEGNALI.
-    Il tuo lettore deve sentirsi 3 passi avanti all'umanità.
+    OBIETTIVO: Selezionare notizie di ALTO VALORE STRATEGICO o TECNICO.
     
-    ISTRUZIONI DI SELEZIONE (ECCELLENZA):
-    1. Cerca l'"Avanguardia": Seleziona notizie che rappresentano un salto tecnologico, un cambio di paradigma o un rischio latente.
-    2. Varietà Obbligatoria: Non focalizzarti su un solo argomento. Se trovi 3 notizie diverse valide, riportale tutte. 
-    3. Densità: Se ci sono molti segnali validi, scrivili. Non aver paura di abbondare, purché la qualità sia estrema.
+    PRIORITÀ DI SELEZIONE:
+    1. LIVELLO ORACOLO: Notizie che cambiano il paradigma (Visionarie).
+    2. LIVELLO TECNICO: Progressi solidi, nuovi paper, aggiornamenti importanti.
     
-    STILE DI SCRITTURA (VISIONARIO):
-    - Titoli: In Italiano, eleganti, assertivi (Sentence case).
-    - Analisi: Non riassumere e basta. Spiega PERCHÉ è importante. Collega i puntini. "Questo significa che...", "Questo apre la strada a...".
-    - Tono: Colto, distaccato ma potente. Da "Insider" che sa cose che gli altri ignorano.
+    IMPORTANTE: 
+    - NON restituire vuoto se ci sono notizie tecniche valide. 
+    - Il lettore vuole sapere cosa succede, anche se oggi non è stato inventato il teletrasporto.
+    - Seleziona ALMENO 2-3 notizie se presenti nel testo.
     
-    FORMATO OUTPUT (MARKDOWN):
-    ### [Titolo Elegante in Italiano]
-    [Analisi densa di 5-8 righe. Usa termini tecnici corretti ma spiega l'impatto strategico.]
+    STILE:
+    - Titoli: Italiano, Sentence case (Eleganti).
+    - Analisi: Spiega l'impatto. "Questo permette di...", "Cruciale perché...".
+    
+    FORMATO:
+    ### [Titolo Elegante]
+    [Analisi densa.]
     
     **Fonte:** [Link](URL)
     
-    (Riga vuota tra le notizie)
+    (Riga vuota)
     """
     
     try:
@@ -301,9 +294,9 @@ def analyze_cluster(cluster_key, info, raw_text):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"SEGNALI RILEVATI:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
+                {"role": "user", "content": f"DATI DISPONIBILI:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
             ],
-            temperature=0.3, # Bassa per precisione, ma non zero per creatività nei collegamenti
+            temperature=0.3, 
             max_tokens=7000 
         )
         return completion.choices[0].message.content
@@ -312,7 +305,7 @@ def analyze_cluster(cluster_key, info, raw_text):
         return ""
 
 # --- 4. MAIN SEQUENCER ---
-print("Avvio IL POLIMATE (Protocollo Visionary)...")
+print("Avvio IL POLIMATE (Protocollo Visionary Hybrid)...")
 start_time = time.time()
 italian_date = get_italian_date()
 today_iso = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -320,23 +313,22 @@ today_iso = datetime.datetime.now().strftime("%Y-%m-%d")
 full_report = "" 
 
 for key, info in CLUSTERS.items():
-    print(f"\n--- Scansione Settore: {info['name']} ---")
+    print(f"\n--- Scansione: {info['name']} ---")
     raw_data = get_cluster_data(info['urls'])
     
     if raw_data:
         raw_text = "\n---\n".join(raw_data)
         analysis = analyze_cluster(key, info, raw_text)
         
-        # Filtro qualità: se l'analisi è troppo breve, l'AI forse ha allucinato o non trovato nulla di degno
-        if analysis and len(analysis) > 50:
+        if analysis and len(analysis) > 30:
             full_report += f"\n\n## {info['name']}\n\n{analysis}\n"
         else:
-            print("  > Nessun segnale strategico rilevato.")
+            print("  > Contenuto insufficiente o filtrato.")
     else:
-        print("  > Radar muto (nessun dato grezzo).")
+        print("  > Nessun dato grezzo rilevato.")
     
-    # Pausa tattica
-    time.sleep(30)
+    # Pausa di sicurezza
+    time.sleep(25)
 
 # SALVATAGGIO
 if not os.path.exists("_posts"):
@@ -359,7 +351,7 @@ if len(full_report) > 100:
         f.write(markdown_file)
     print(f"\nDossier salvato: {filename}")
 else:
-    print("\nATTENZIONE: Report vuoto. Nessun segnale rilevante trovato.")
+    print("\nATTENZIONE: Report vuoto.")
 
 duration = (time.time() - start_time) / 60
-print(f"Tempo totale missione: {duration:.1f} minuti.")
+print(f"Tempo totale: {duration:.1f} minuti.")
