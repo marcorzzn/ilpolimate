@@ -5,7 +5,7 @@ import feedparser
 import concurrent.futures
 from groq import Groq
 from bs4 import BeautifulSoup
-from zoneinfo import ZoneInfo
+import pytz
 
 # ================== CONFIGURAZIONE ==================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
@@ -24,7 +24,7 @@ def get_italian_date():
         9: "settembre", 10: "ottobre", 11: "novembre", 12: "dicembre"
     }
     # Use Rome timezone
-    now = datetime.datetime.now(ZoneInfo("Europe/Rome"))
+    now = datetime.datetime.now(pytz.timezone("Europe/Rome"))
     return f"{now.day} {mesi[now.month]} {now.year}"
 
 # ================== CLUSTER COMPLETI ==================
@@ -362,7 +362,7 @@ RISPONDI ORA CON LE NOTIZIE:"""
 print("🚀 IL POLIMATE - Versione DEBUG\n")
 start_time = time.time()
 italian_date = get_italian_date()
-today_iso = datetime.datetime.now(ZoneInfo("Europe/Rome")).strftime("%Y-%m-%d")
+today_iso = datetime.datetime.now(pytz.timezone("Europe/Rome")).strftime("%Y-%m-%d")
 
 report_parts = []
 total_news = 0
