@@ -7,15 +7,24 @@ from groq import Groq
 
 # --- CONFIGURAZIONE ---
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-MAX_WORKERS = 50           # Aumentato per gestire 160+ fonti
-LOOKBACK_HOURS = 30        # Finestra temporale estesa
-MAX_SECTION_CONTEXT = 40000 # Contesto aumentato per lettura massiva
+MAX_WORKERS = 50            # Alta parallelizzazione per 160 fonti
+LOOKBACK_HOURS = 48         # Aumentato a 48h per garantire pienezza di notizie
+MAX_SECTION_CONTEXT = 45000 # Contesto massiccio per leggere tutto
 
 if not GROQ_API_KEY:
     print("ERRORE CRITICO: Manca la GROQ_API_KEY.")
     exit(1)
 
-# --- 1. I 13 CLUSTER STRATEGICI (ARSENALE TITAN: 160+ FONTI ELITE) ---
+# --- FUNZIONE DATA ITALIANA ---
+def get_italian_date():
+    months = {
+        1: "gennaio", 2: "febbraio", 3: "marzo", 4: "aprile", 5: "maggio", 6: "giugno",
+        7: "luglio", 8: "agosto", 9: "settembre", 10: "ottobre", 11: "novembre", 12: "dicembre"
+    }
+    now = datetime.datetime.now()
+    return f"{now.day} {months[now.month]} {now.year}"
+
+# --- 1. I 13 CLUSTER STRATEGICI (ARSENALE TITAN: 160+ FONTI) ---
 CLUSTERS = {
     "01_AI_RESEARCH": {
         "name": "MENTE SINTETICA & LABORATORI AI",
@@ -213,7 +222,7 @@ CLUSTERS = {
 # --- 2. ENGINE DI RACCOLTA (HYDRA) ---
 def fetch_feed(url):
     try:
-        # User Agent simulato per evitare blocchi
+        # User Agent simulato
         d = feedparser.parse(url, agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) PolymathBot/3.0")
         items = []
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -227,7 +236,7 @@ def fetch_feed(url):
             elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
                 pub_date = datetime.datetime(*entry.updated_parsed[:6], tzinfo=datetime.timezone.utc)
             
-            # Se la data manca, accettiamo il contenuto per non perdere Tier-0 papers
+            # Se la data manca, accettiamo il contenuto
             if not pub_date or pub_date > cutoff:
                 content = "No content"
                 if hasattr(entry, 'summary'): content = entry.summary
@@ -252,41 +261,39 @@ def get_cluster_data(urls):
             data.extend(res)
     return data
 
-# --- 3. ANALISTA AI (IL GIORNALISTA RIGOROSO) ---
+# --- 3. ANALISTA AI (PROMPT CORRETTO PER LINK CLICCABILI) ---
 def analyze_cluster(cluster_key, info, raw_text):
     if not raw_text: return ""
     
     print(f"  > Analisi {cluster_key} ({len(raw_text)} chars)...")
     
-    # Prompt per Italiano "Corriere/Sole24Ore", Sentence Case e Fonti separate
     system_prompt = f"""
     SEI: "Il Polimate", analista strategico senior.
     SETTORE: {info['name']}
     
-    OBIETTIVO: Analisi granulare di TUTTE le notizie rilevanti.
-    NON FARE RIASSUNTI. Elenca e analizza ogni singola notizia valida.
+    OBIETTIVO: Analisi MASSIVA di tutte le notizie. 
+    NON FERMARTI ALLA PRIMA NOTIZIA. ELENCA TUTTO QUELLO CHE TROVI DI RILEVANTE.
+    Se ci sono 10 notizie, scrivine 10. Se ce ne sono 5, scrivine 5.
     
-    REGOLE DI FORMATTAZIONE (INDISPENSABILI):
+    REGOLE DI FORMATTAZIONE (RISPETTA RIGOROSAMENTE):
     1. TITOLI: Usa lo stile italiano ("Sentence case").
-       - Esempio CORRETTO: "La nuova strategia nucleare della Cina"
-       - Esempio SBAGLIATO: "La Nuova Strategia Nucleare Della Cina" (No Title Case inglese).
+       - Esempio: "La nuova strategia nucleare della Cina"
     
-    2. FONTI:
-       - Il link DEVE essere cliccabile e posto su una riga separata alla fine del paragrafo.
-       - Formato esatto: **Fonte:** [Link]
+    2. FONTI CLICCABILI (IMPORTANTE):
+       - Alla fine di ogni notizia, devi inserire il link in formato MARKDOWN CLICCABILE.
+       - SCRIVI ESATTAMENTE COSÌ: **Fonte:** [Vedi Fonte](LINK_DELLA_NOTIZIA)
+       - Il link tra parentesi tonde DEVE essere l'URL originale fornito.
     
     3. PULIZIA:
        - NESSUN tag <hr>.
-       - NESSUNA introduzione ("Ecco le notizie...").
-       - NESSUNA conclusione.
-       - Vai dritto al punto.
-       - NON giustificare il testo.
+       - NESSUNA introduzione o conclusione.
+       - Testo allineato a sinistra (non giustificato).
     
     FORMATO DI OUTPUT PER OGNI NOTIZIA:
     ### [Titolo in italiano corretto]
-    [Analisi tecnica dettagliata di 5-10 righe. Spiega il meccanismo, i dati e l'impatto strategico. Usa un linguaggio colto, asettico e preciso.]
+    [Analisi tecnica dettagliata di 5-10 righe. Spiega il meccanismo e l'impatto.]
     
-    **Fonte:** [Link originale]
+    **Fonte:** [Vedi Fonte](LINK_ORIGINALE)
     
     (Lascia una riga vuota tra una notizia e l'altra)
     """
@@ -297,10 +304,10 @@ def analyze_cluster(cluster_key, info, raw_text):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"INPUT DATI:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
+                {"role": "user", "content": f"INPUT DATI DA ANALIZZARE:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
             ],
             temperature=0.2, 
-            max_tokens=6000 
+            max_tokens=7000 # Aumentato per permettere output molto lunghi
         )
         return completion.choices[0].message.content
     except Exception as e:
@@ -310,9 +317,11 @@ def analyze_cluster(cluster_key, info, raw_text):
 # --- 4. SEQUENCER PRINCIPALE ---
 print("Avvio IL POLIMATE TITAN ENGINE...")
 start_time = time.time()
-today = datetime.datetime.now().strftime("%Y-%m-%d")
 
-# Costruzione del Report (Markdown Puro)
+# Generazione Data Italiana
+italian_date = get_italian_date()
+today_iso = datetime.datetime.now().strftime("%Y-%m-%d")
+
 full_report = "" 
 
 for key, info in CLUSTERS.items():
@@ -326,7 +335,7 @@ for key, info in CLUSTERS.items():
         # 2. Analizza
         analysis = analyze_cluster(key, info, raw_text)
         
-        # 3. Aggiungi al report se c'è contenuto valido
+        # 3. Aggiungi al report
         if analysis and len(analysis) > 50:
             full_report += f"\n\n## {info['name']}\n\n{analysis}\n"
         else:
@@ -334,19 +343,18 @@ for key, info in CLUSTERS.items():
     else:
         print("  > Nessun dato grezzo trovato per questo settore.")
     
-    # Pausa di sicurezza per Rate Limit 
     time.sleep(15)
 
 # --- 5. SALVATAGGIO ---
 if not os.path.exists("_posts"):
     os.makedirs("_posts")
 
-filename = f"_posts/{today}-brief.md"
+filename = f"_posts/{today_iso}-brief.md"
 
-# Front Matter pulito per Jekyll
+# Markdown con Titolo Italiano Corretto
 markdown_file = f"""---
-title: "Il Dossier del {today}"
-date: {today}
+title: "La Rassegna del {italian_date}"
+date: {today_iso}
 layout: post
 excerpt: "Edizione Titan. Analisi strategica su 160+ fonti d'élite: MIT, DARPA, Banche Centrali e Laboratori Globali."
 ---
