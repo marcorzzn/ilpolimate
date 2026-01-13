@@ -25,7 +25,7 @@ title: Home
         color: #444; margin-top: 10px;
     }
 
-    /* ARTICOLO */
+    /* ARTICOLO IN EVIDENZA */
     .feature-title {
         font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700;
         line-height: 1.1; color: #000; text-decoration: none; display: block; margin-bottom: 15px;
