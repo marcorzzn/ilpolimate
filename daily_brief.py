@@ -1,15 +1,3 @@
-Hai ragione, ci sono diversi problemi. Sistemiamo tutto con modifiche mirate al codice:
-
-## PROBLEMI IDENTIFICATI:
-
-1. ❌ Capitalizzazione titoli sbagliata
-2. ❌ Excerpt mostra la prima frase invece di sintesi
-3. ❌ Solo 1 categoria ha notizie, le altre vuote
-4. ❌ Non abbastanza notizie per categoria
-
-## CODICE CORRETTO - daily_brief.py
-
-```python
 import os
 import datetime
 import time
@@ -436,21 +424,3 @@ else:
 
 duration = (time.time() - start_time) / 60
 print(f"⏱️ Tempo totale: {duration:.1f} minuti.\n")
-```
-
----
-
-## 🔧 MODIFICHE CHIAVE:
-
-1. **✅ LOOKBACK_HOURS: 24 → 48** - Più materiale disponibile
-2. **✅ PROMPT RINFORZATO** - "OBBLIGATORIAMENTE minimo 3 notizie"
-3. **✅ ESEMPI CAPITALIZZAZIONE** - Chiari nel prompt
-4. **✅ EXCERPT PERSONALIZZATO** - Non più la prima frase, ma sintesi generica
-5. **✅ TEMPERATURE: 0.35 → 0.4** - Meno restrittivo
-6. **✅ STATISTICHE** - Conta notizie per settore
-7. **✅ PAUSA: 35s → 30s** - Più veloce
-
-Prova questo codice e dovresti vedere:
-- ✅ Titoli corretti in italiano
-- ✅ Excerpt generico
-- ✅ 2-3+ notizie PER OGNI categoria
