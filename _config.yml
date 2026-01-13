@@ -4,14 +4,15 @@ author: marcorzzn
 email: you@example.com
 
 # URL CONFIGURATION
-# Se la tua repo si chiama "The-Polymath-Brief", baseurl DEVE essere "/The-Polymath-Brief"
-# Se l'hai rinominata "marcorzzn.github.io", lascialo vuoto ""
+# Se la tua repo si chiama "The-Polymath-Brief", lascia così:
 baseurl: "/The-Polymath-Brief" 
+# Se l'hai rinominata "marcorzzn.github.io", metti: baseurl: ""
+
 url: "https://marcorzzn.github.io"
 
 # BUILD SETTINGS
 markdown: kramdown
-# theme: jekyll-theme-minimal  <-- LO COMMENTIAMO PERCHE' USIAMO IL NOSTRO LAYOUT CUSTOM
+# theme: jekyll-theme-minimal  <-- COMMENTATO PER EVITARE CONFLITTI
 permalink: /:year/:month/:day/:title.html
 future: true
 plugins:
