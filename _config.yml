@@ -1,8 +1,14 @@
 title: IL POLIMATE
-description: L'essenziale strategico, ogni mattina.
+email: you@example.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Intelligence Strategica.
+baseurl: "" # Lascia vuoto se il sito è marcorzzn.github.io
+url: "https://marcorzzn.github.io" 
+twitter_username: marcorzzn
+github_username:  marcorzzn
+
+# IMPOSIZIONI TECNICHE
+markdown: kramdown
 theme: jekyll-theme-minimal
-lang: it-IT
-url: "https://marcorzzn.github.io"
-baseurl: ""
+permalink: /:year/:month/:day/:title/
 future: true
-show_downloads: false
