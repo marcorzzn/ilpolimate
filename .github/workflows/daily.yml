@@ -20,9 +20,9 @@ jobs:
         with:
           python-version: '3.9'
 
-      # CORREZIONE: Aggiunte beautifulsoup4 e pytz
+      # Installiamo Groq e DuckDuckGo invece di OpenAI/Tavily
       - name: Install Libraries
-        run: pip install groq feedparser beautifulsoup4 pytz
+        run: pip install groq feedparser
 
       - name: Run Generator Script
         env:
