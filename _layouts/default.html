@@ -108,29 +108,68 @@
             font-family: 'Inter', sans-serif; font-size: 1rem;
         }
         
-        /* SCROLLING SUMMARY BAR */
-        .scrolling-summary {
+        /* STOCK TICKER */
+        .stock-ticker {
             border: 1px solid #e0e0e0;
             border-radius: 4px;
-            padding: 8px 15px;
             background: #f8f9fa;
             margin: 15px 0;
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
             line-height: 1.4;
         }
-        .scrolling-summary marquee {
-            display: block;
+
+        .ticker-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-content {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 30s linear infinite;
+        }
+
+        .ticker-content a {
+            margin-right: 30px;
+            color: #d00;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        body.dark-mode .stock-ticker {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .ticker-content a {
+            color: #ff5555;
         }
         
         /* DARK MODE OVERRIDES */
         body.dark-mode .masthead { border-bottom-color: #fff; }
         body.dark-mode .masthead-title, body.dark-mode .feature-title { color: #fff; }
         body.dark-mode .read-btn { background: #fff; color: #000; }
-        body.dark-mode .scrolling-summary {
-            background: #2a2a2a;
-            border-color: #444;
-            color: #e0e0e0;
+        body.dark-mode .archive-title {
+          color: #e0e0e0;
+        }
+
+        body.dark-mode .archive-title a {
+          color: #e0e0e0;
+        }
+
+        body.dark-mode .archive-title a:hover {
+          color: #fff;
         }
     </style>
 </head>
