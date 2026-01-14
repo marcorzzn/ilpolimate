@@ -1,31 +1,38 @@
-title: IL POLIMATE
-description: Intelligence Strategica.
-author: marcorzzn
-email: you@example.com
+name: Daily Polymath Brief (Free Tier)
 
-# --- 1. CONFIGURAZIONE CARTELLA (Fondamentale) ---
-# Questo deve coincidere col nome della tua repository
-baseurl: "/ilpolimate"
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
 
-# Il dominio principale
-url: "https://marcorzzn.github.io"
+permissions:
+  contents: write
 
-# --- 2. FORMATO LINK (La tua intuizione) ---
-# Forza l'estensione .html per evitare errori 404 su GitHub Pages
-permalink: /:year/:month/:day/:title.html
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-# --- 3. GESTIONE DATE ---
-# Mostra i post anche se la data è "domani" per il server (evita 404 sui post nuovi)
-future: true
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-markdown: kramdown
+      # Installiamo Groq e DuckDuckGo invece di OpenAI/Tavily
+      - name: Install Libraries
+        run: pip install groq feedparser
 
-plugins:
-  - jekyll-feed
+      - name: Run Generator Script
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python daily_brief.py
 
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - daily_brief.py
-  - README.md
-  - requirements.txt
+      - name: Commit and Push Report
+        run: |
+          git config --global user.name 'Polymath Bot'
+          git config --global user.email 'bot@users.noreply.github.com'
+          git add _posts/
+          git commit -m "New Brief Generated" || echo "Nessun cambiamento"
+          git push
