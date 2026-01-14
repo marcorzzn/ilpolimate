@@ -1,9 +1,9 @@
-name: Daily Polymath Brief (Free Tier)
+name: Daily Polymath Brief
 
 on:
   schedule:
-    - cron: '0 7 * * *'
-  workflow_dispatch:
+    - cron: '0 7 * * *' # Esegue ogni mattina alle 7:00 UTC (8:00 ITA)
+  workflow_dispatch: # Permette l'avvio manuale
 
 permissions:
   contents: write
@@ -20,9 +20,9 @@ jobs:
         with:
           python-version: '3.9'
 
-      # Installiamo Groq e DuckDuckGo invece di OpenAI/Tavily
+      # CORREZIONE CRITICA: Aggiunte beautifulsoup4 e pytz che mancavano
       - name: Install Libraries
-        run: pip install groq feedparser
+        run: pip install groq feedparser beautifulsoup4 pytz
 
       - name: Run Generator Script
         env:
