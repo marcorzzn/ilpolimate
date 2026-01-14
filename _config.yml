@@ -3,16 +3,29 @@ description: Intelligence Strategica.
 author: marcorzzn
 email: you@example.com
 
-# URL CONFIGURATION
-# Se la tua repo si chiama "The-Polymath-Brief", baseurl DEVE essere "/The-Polymath-Brief"
-# Se l'hai rinominata "marcorzzn.github.io", lascialo vuoto ""
-baseurl: "/The-Polymath-Brief" 
+# --- 1. CONFIGURAZIONE CARTELLA (Fondamentale) ---
+# Questo deve coincidere col nome della tua repository
+baseurl: "/ilpolimate"
+
+# Il dominio principale
 url: "https://marcorzzn.github.io"
 
-# BUILD SETTINGS
-markdown: kramdown
-# theme: jekyll-theme-minimal  <-- LO COMMENTIAMO PERCHE' USIAMO IL NOSTRO LAYOUT CUSTOM
+# --- 2. FORMATO LINK (La tua intuizione) ---
+# Forza l'estensione .html per evitare errori 404 su GitHub Pages
 permalink: /:year/:month/:day/:title.html
+
+# --- 3. GESTIONE DATE ---
+# Mostra i post anche se la data è "domani" per il server (evita 404 sui post nuovi)
 future: true
+
+markdown: kramdown
+
 plugins:
   - jekyll-feed
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - daily_brief.py
+  - README.md
+  - requirements.txt
