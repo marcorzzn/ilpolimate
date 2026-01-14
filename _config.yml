@@ -3,28 +3,29 @@ description: Intelligence Strategica.
 author: marcorzzn
 email: you@example.com
 
-# --- CONFIGURAZIONE URL (FONDAMENTALE) ---
-# Impostiamo la cartella esatta dove si trova il sito
+# --- 1. CONFIGURAZIONE CARTELLA (Fondamentale) ---
+# Questo deve coincidere col nome della tua repository
 baseurl: "/ilpolimate"
 
 # Il dominio principale
 url: "https://marcorzzn.github.io"
 
-# --- IMPOSTAZIONI TECNICHE ---
-# Generiamo link semplici con estensione .html per evitare errori 404
+# --- 2. FORMATO LINK (La tua intuizione) ---
+# Forza l'estensione .html per evitare errori 404 su GitHub Pages
 permalink: /:year/:month/:day/:title.html
 
-markdown: kramdown
+# --- 3. GESTIONE DATE ---
+# Mostra i post anche se la data è "domani" per il server (evita 404 sui post nuovi)
+future: true
 
-# Disattiviamo il tema di default affinché usi solo i tuoi layout personalizzati
-# theme: jekyll-theme-minimal 
+markdown: kramdown
 
 plugins:
   - jekyll-feed
 
-# Escludiamo i file di sistema dalla pubblicazione
 exclude:
   - Gemfile
   - Gemfile.lock
   - daily_brief.py
   - README.md
+  - requirements.txt
