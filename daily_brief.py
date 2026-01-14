@@ -7,15 +7,15 @@ from groq import Groq
 
 # --- CONFIGURAZIONE ---
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-MAX_WORKERS = 5
-LOOKBACK_HOURS = 28  # Finestra ampia per non perdere nulla
-MAX_SECTION_CONTEXT = 15000  # Contesto massimo per l'AI
+MAX_WORKERS = 30
+LOOKBACK_HOURS = 28
+MAX_SECTION_CONTEXT = 30000 
 
 if not GROQ_API_KEY:
     print("ERRORE: Manca GROQ_API_KEY. Impostala come variabile d'ambiente.")
     exit(1)
 
-# ================= FONTI (CLUSTERS) =================
+# ================= FONTI =================
 CLUSTERS = {
     "01_AI_RESEARCH": {
         "name": "INTELLIGENZA ARTIFICIALE",
@@ -23,14 +23,14 @@ CLUSTERS = {
         "urls": [
             "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
-            "https://www.csail.mit.edu/news/feed",
+            "https://www.csail.mit.edu/news/feed", 
             "https://hai.stanford.edu/news/feed", 
             "https://bair.berkeley.edu/blog/feed.xml", 
-            "https://deepmind.google/blog/rss.xml", 
+            "https://deepmind.google/blog/rss.xml",
             "https://openai.com/blog/rss.xml",
             "https://research.google/blog/rss",
             "https://ai.meta.com/blog/rss.xml",
-            "https://huggingface.co/blog/feed.xml", 
+            "https://huggingface.co/blog/feed.xml",
             "https://www.microsoft.com/en-us/research/feed/"
         ]
     },
@@ -50,7 +50,7 @@ CLUSTERS = {
     },
     "03_MATH_FRONTIER": {
         "name": "MATEMATICA",
-        "desc": "Lista Custom Utente.",
+        "desc": "Crittografia e Ottimizzazione.",
         "urls": [
             "https://eprint.iacr.org/rss/rss.xml",
             "https://blog.cryptographyengineering.com/feed/",
@@ -98,7 +98,7 @@ CLUSTERS = {
     },
     "06_CHIP_FAB": {
         "name": "SILICIO & FONDERIE",
-        "desc": "TSMC, ASML.",
+        "desc": "Processi produttivi, Litografia.",
         "urls": [
             "https://semiengineering.com/feed/",
             "https://www.imec-int.com/en/rss",
@@ -110,7 +110,7 @@ CLUSTERS = {
         ]
     },
     "07_CHIP_DESIGN": {
-        "name": "HARDWARE",
+        "name": "HARDWARE ARCHITECTURE",
         "desc": "GPU Design, HPC.",
         "urls": [
             "https://spectrum.ieee.org/feeds/topic/semiconductors/rss",
@@ -118,12 +118,12 @@ CLUSTERS = {
             "https://www.tomshardware.com/feeds/all",
             "https://www.servethehome.com/feed/", 
             "https://chipsandcheese.com/feed/", 
-            "https://www.nextplatform.com/feed/"
+            "https://www.nextplatform.com/feed/" 
         ]
     },
     "08_MATERIALS": {
-        "name": "MATERIALI",
-        "desc": "Batterie, Chimica.",
+        "name": "MATERIALI & CHIMICA",
+        "desc": "Batterie, Superconduttori.",
         "urls": [
             "https://chemrxiv.org/engage/chemrxiv/rss",
             "https://www.anl.gov/rss/research-news/feed", 
@@ -135,11 +135,11 @@ CLUSTERS = {
     },
     "09_SPACE_FRONTIER": {
         "name": "SPACE ECONOMY",
-        "desc": "ESA, NASA.",
+        "desc": "Lanci, Satelliti, Esplorazione.",
         "urls": [
             "https://spacenews.com/feed/",
             "https://www.esa.int/rssfeed/Our_Activities/Operations",
-            "https://www.jpl.nasa.gov/feeds/news/",
+            "https://www.jpl.nasa.gov/feeds/news/", 
             "https://blogs.nasa.gov/station/feed/",
             "https://spaceflightnow.com/feed/",
             "https://gsp.esa.int/documents/10180/0/rss",
@@ -147,8 +147,8 @@ CLUSTERS = {
         ]
     },
     "10_GEO_DEFENSE": {
-        "name": "DIFESA",
-        "desc": "Strategie militari.",
+        "name": "DIFESA & CONFLITTI",
+        "desc": "Strategie militari, Armamenti.",
         "urls": [
             "https://rusi.org/rss.xml",
             "https://warontherocks.com/feed/",
@@ -163,7 +163,7 @@ CLUSTERS = {
     },
     "11_GEO_STRATEGY": {
         "name": "GEOPOLITICA & DIPLOMAZIA",
-        "desc": "Analisi globale.",
+        "desc": "Analisi globale, Think Tanks.",
         "urls": [
             "https://www.foreignaffairs.com/rss.xml", 
             "https://www.chathamhouse.org/rss/research/all", 
@@ -178,7 +178,7 @@ CLUSTERS = {
     },
     "12_CENTRAL_BANKS": {
         "name": "MACROECONOMIA & CAPITALE",
-        "desc": "Banche Centrali.",
+        "desc": "Banche Centrali, Policy Papers.",
         "urls": [
             "https://www.bis.org/doclist/research.rss",
             "https://www.nber.org/rss/new.xml", 
@@ -193,7 +193,7 @@ CLUSTERS = {
     },
     "13_GLOBAL_ENERGY": {
         "name": "ENERGIA & RISORSE",
-        "desc": "Mercati energetici.",
+        "desc": "Oil, Gas, Rinnovabili, Nucleare.",
         "urls": [
             "https://oilprice.com/rss/main",
             "https://www.oxfordenergy.org/feed/",
@@ -233,8 +233,7 @@ def fetch_feed(url):
                 link = entry.link
                 items.append(f"SRC: {source}\nLINK: {link}\nTITLE: {entry.title}\nTXT: {content}\n")
         return items
-    except Exception as e:
-        print(f"Error fetching {url}: {str(e)}")
+    except:
         return []
 
 def get_cluster_data(urls):
@@ -245,38 +244,40 @@ def get_cluster_data(urls):
             data.extend(res)
     return data
 
-# --- 3. AGENTE ANALISTA (PROMPT DEFINITIVO) ---
+# --- 3. AGENTE ANALISTA (PROMPT MASSIVO) ---
 def analyze_cluster(cluster_key, info, raw_text):
     if not raw_text: return ""
     
     print(f"  > Analisi {cluster_key} ({len(raw_text)} chars)...")
     
-    # PROMPT OTTIMIZZATO PER IL FORMATO RICHIESTO
     system_prompt = f"""
-SEI: Un analista senior di intelligence tecnologica.
-SETTORE: {info['name']}
-
-OBIETTIVO: Selezionare ESATTAMENTE 4 notizie (se disponibili) e riassumerle seguendo rigorosamente il layout richiesto.
-
-LAYOUT OBBLIGATORIO (Segui questo schema visivo):
-
-**[Titolo della notizia in Italiano]**
-[Testo del paragrafo di 3-4 righe. Descrizione tecnica e densa.]
-Fonte: [Link originale]
-
-[Riga vuota per separare dalla prossima notizia]
-
-ESEMPIO CORRETTO:
-**Nuovo record di efficienza per le celle solari**
-I ricercatori hanno stabilito un nuovo benchmark raggiungendo il 24% di efficienza con una stabilità operativa raddoppiata. La tecnica riduce i difetti cristallini.
-Fonte: https://www.nrel.gov/news/rss.xml
-
-REGOLE CRITICHE:
-1. Il Titolo DEVE essere in grassetto (uso di doppi asterischi).
-2. La parola "Fonte:" DEVE essere tassativamente su una NUOVA RIGA rispetto al testo. Non attaccarla alla fine del paragrafo.
-3. Non lasciare righe vuote tra il testo e la fonte.
-4. Lascia una riga vuota SOLO dopo aver scritto la fonte, prima della notizia successiva.
-"""
+    SEI: "Il Polimate", analista di intelligence.
+    SETTORE: {info['name']}
+    
+    OBIETTIVO: Creare un report dettagliatissimo ed esteso.
+    NON DEVI RIASSUMERE TUTTO IN UN PARAGRAFO.
+    DEVI ANALIZZARE OGNI SINGOLA NOTIZIA RILEVANTE SEPARATAMENTE.
+    
+    INPUT: Lista di news/paper.
+    
+    OUTPUT RICHIESTO:
+    - Scorri tutte le notizie fornite.
+    - Se una notizia è tecnicamente rilevante, scrivi un paragrafo dedicato.
+    - Se ci sono 10 notizie valide, voglio 10 paragrafi.
+    
+    FORMATO PER OGNI NOTIZIA (Usa Markdown):
+    ### Titolo con capitalizzazione italiana
+    [Analisi tecnica dettagliata di 4-5 righe. Spiega il 'cosa', il 'come' e il 'perché'. Usa termini tecnici.]
+    
+    **Fonte:** [Inserisci il LINK originale fornito] (DEVE ESSERE CLICCABILE)
+    
+    STILE:
+    - Densità informativa massima.
+    - Italiano professionale.
+    - NESSUNA INTRODUZIONE, NESSUNA CONCLUSIONE. Solo la lista delle analisi.
+    - Assicurati di lasciare una riga vuota tra l'analisi e la parola "Fonte:".
+    - NON UTILIZZARE <hv> 
+    """
     
     try:
         client = Groq(api_key=GROQ_API_KEY)
@@ -284,10 +285,10 @@ REGOLE CRITICHE:
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"DATI INPUT:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
+                {"role": "user", "content": f"INPUT DATI:\n{raw_text[:MAX_SECTION_CONTEXT]}"}
             ],
-            temperature=0.2, # Bassa temperatura per precisione
-            max_tokens=2500
+            temperature=0.2,
+            max_tokens=6000 
         )
         return completion.choices[0].message.content
     except Exception as e:
@@ -298,59 +299,34 @@ REGOLE CRITICHE:
 print("Avvio MOTORE EPOCHALE...")
 today = datetime.datetime.now().strftime("%Y-%m-%d")
 
-# Data in italiano per l'header
-today_date = datetime.datetime.now()
-month_name = today_date.strftime("%B")
-month_italian = {
-    "January": "gennaio", "February": "febbraio", "March": "marzo",
-    "April": "aprile", "May": "maggio", "June": "giugno",
-    "July": "luglio", "August": "agosto", "September": "settembre",
-    "October": "ottobre", "November": "novembre", "December": "dicembre"
-}.get(month_name, month_name)
-display_date = f"{today_date.day} {month_italian} {today_date.year}"
-
-# Header modificato: RIMOSSO il campo excerpt
-full_report = f"""---
-title: "La rassegna del {display_date}"
-date: {today}
-layout: post
----
-
-> Questo documento contiene un'analisi granulare di tutti i segnali rilevanti intercettati nelle ultime 24 ore.
-
----
-"""
+# Inizializzazione vuota per non avere header
+full_report = ""
 
 for key, info in CLUSTERS.items():
     print(f"\n--- Processando Cluster: {info['name']} ---")
     
-    # Pulisci gli URL rimuovendo spazi e ritorni a capo
-    clean_urls = [url.strip() for url in info['urls']]
-    
-    raw_data = get_cluster_data(clean_urls)
+    raw_data = get_cluster_data(info['urls'])
     
     if raw_data:
-        print(f"  > Trovati {len(raw_data)} articoli per {info['name']}")
-        # Limita a 50 articoli per evitare di sovraccaricare il contesto se ci sono troppe news
-        limited_raw_data = raw_data[:50]
-        raw_text = "\n---\n".join(limited_raw_data)
+        raw_text = "\n---\n".join(raw_data)
         analysis = analyze_cluster(key, info, raw_text)
         
         if analysis and len(analysis) > 50:
-            full_report += f"\n\n## {info['name']}\n\n{analysis}\n\n"
+            # Aggiunge direttamente la sezione senza intro globali
+            full_report += f"\n\n## {info['name']}\n\n{analysis}\n\n<br><hr><br>\n"
         else:
             print("  > Nessun output rilevante dall'AI.")
     else:
         print("  > Nessun dato grezzo trovato.")
     
-    # Pausa tattica per rate limit
-    time.sleep(15)
+    time.sleep(10)
 
 # --- 5. SALVATAGGIO ---
 if not os.path.exists("_posts"): os.makedirs("_posts")
 filename = f"_posts/{today}-brief.md"
 
+# Scrittura diretta del contenuto grezzo (senza YAML/Frontmatter)
 with open(filename, "w", encoding='utf-8') as f:
-    f.write(full_report)
+    f.write(full_report.strip()) # strip() rimuove spazi bianchi iniziali superflui
 
-print(f"Dossier Epochale Generato: {filename}")
+print(f"Dossier Generato (Clean Version): {filename}")
