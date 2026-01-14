@@ -4,7 +4,7 @@ title: Home
 ---
 
 <div class="masthead">
-    <div class="masthead-top">EST. 2026</div>
+    <div class="masthead-top">FONDATO NEL 2026</div>
     <h1 class="masthead-title">IL POLIMATE</h1>
     <div class="masthead-sub">L'essenziale strategico, ogni mattina.</div>
 </div>
@@ -35,10 +35,17 @@ title: Home
         {{ latest.title }}
     </a>
     
-    <div class="scrolling-summary">
-        <marquee behavior="scroll" direction="left" scrollamount="3">
-            {{ latest.content | strip_html | truncate: 150 }}
-        </marquee>
+    <div class="stock-ticker">
+        <div class="ticker-container">
+            <div class="ticker-content">
+                <a href="https://www.google.com/finance/quote/SPX:INDEXSP" target="_blank">S&P 500: 5,500.25 ▲ 25.75</a>
+                <a href="https://www.google.com/finance/quote/NDAQ:INDEXNASDAQ" target="_blank">Nasdaq: 17,500.10 ▼ 30.20</a>
+                <a href="https://www.google.com/finance/quote/DJI:INDEXDJX" target="_blank">Dow Jones: 39,800.75 ▲ 85.50</a>
+                <a href="https://www.google.com/finance/quote/FTSE:INDEXFTSE" target="_blank">FTSE 100: 8,500.35 ▼ 15.20</a>
+                <a href="https://www.google.com/finance/quote/DAX:INDEXDE" target="_blank">DAX: 18,000.65 ▲ 35.40</a>
+                <a href="https://www.google.com/finance/quote/N225:INDEXNIKKEI" target="_blank">Nikkei 225: 39,500.80 ▼ 20.10</a>
+            </div>
+        </div>
     </div>
     
     <a href="{{ latest.url | relative_url }}" class="read-btn">
