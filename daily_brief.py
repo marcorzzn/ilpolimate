@@ -24,13 +24,13 @@ CLUSTERS = {
             "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "https://www.csail.mit.edu/news/feed",
-            "https://hai.stanford.edu/news/feed",
-            "https://bair.berkeley.edu/blog/feed.xml",
-            "https://deepmind.google/blog/rss.xml",
+            "https://hai.stanford.edu/news/feed", 
+            "https://bair.berkeley.edu/blog/feed.xml", 
+            "https://deepmind.google/blog/rss.xml", 
             "https://openai.com/blog/rss.xml",
             "https://research.google/blog/rss",
             "https://ai.meta.com/blog/rss.xml",
-            "https://huggingface.co/blog/feed.xml",
+            "https://huggingface.co/blog/feed.xml", 
             "https://www.microsoft.com/en-us/research/feed/"
         ]
     },
@@ -41,9 +41,9 @@ CLUSTERS = {
             "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=40",
             "https://www.nature.com/nphys.rss",
             "https://phys.org/rss-feed/physics-news/quantum-physics/",
-            "https://www.caltech.edu/c/news/rss",
-            "https://ethz.ch/en/news-and-events/eth-news/news.rss",
-            "https://qt.eu/feed/",
+            "https://www.caltech.edu/c/news/rss", 
+            "https://ethz.ch/en/news-and-events/eth-news/news.rss", 
+            "https://qt.eu/feed/", 
             "https://scitechdaily.com/tag/quantum-physics/feed/",
             "https://www.quantamagazine.org/feed/"
         ]
@@ -73,10 +73,10 @@ CLUSTERS = {
         "urls": [
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology",
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=genomics",
-            "https://www.nature.com/nbt.rss",
-            "https://www.thelancet.com/rssfeed/lancet_current.xml",
-            "https://www.cell.com/cell/current.rss",
-            "https://hms.harvard.edu/news/rss",
+            "https://www.nature.com/nbt.rss", 
+            "https://www.thelancet.com/rssfeed/lancet_current.xml", 
+            "https://www.cell.com/cell/current.rss", 
+            "https://hms.harvard.edu/news/rss", 
             "https://www.genengnews.com/feed/",
             "https://www.fiercebiotech.com/rss/xml"
         ]
@@ -90,7 +90,7 @@ CLUSTERS = {
             "https://krebsonsecurity.com/feed/",
             "https://www.mandiant.com/resources/blog/rss.xml",
             "https://unit42.paloaltonetworks.com/feed/",
-            "https://www.cisa.gov/uscert/ncas/alerts.xml",
+            "https://www.cisa.gov/uscert/ncas/alerts.xml", 
             "https://www.crowdstrike.com/blog/feed/",
             "https://www.darkreading.com/rss.xml",
             "https://www.sentinelone.com/blog/feed/"
@@ -103,7 +103,7 @@ CLUSTERS = {
             "https://semiengineering.com/feed/",
             "https://www.imec-int.com/en/rss",
             "https://www.semiconductors.org/feed/",
-            "https://www.digitimes.com/rss/daily.xml",
+            "https://www.digitimes.com/rss/daily.xml", 
             "https://semianalysis.com/feed/",
             "https://semiwiki.com/feed/",
             "https://news.mit.edu/rss/topic/engineering"
@@ -116,8 +116,8 @@ CLUSTERS = {
             "https://spectrum.ieee.org/feeds/topic/semiconductors/rss",
             "https://www.anandtech.com/rss/",
             "https://www.tomshardware.com/feeds/all",
-            "https://www.servethehome.com/feed/",
-            "https://chipsandcheese.com/feed/",
+            "https://www.servethehome.com/feed/", 
+            "https://chipsandcheese.com/feed/", 
             "https://www.nextplatform.com/feed/"
         ]
     },
@@ -126,9 +126,9 @@ CLUSTERS = {
         "desc": "Batterie, Chimica.",
         "urls": [
             "https://chemrxiv.org/engage/chemrxiv/rss",
-            "https://www.anl.gov/rss/research-news/feed",
+            "https://www.anl.gov/rss/research-news/feed", 
             "https://www.nature.com/nmat.rss",
-            "https://cen.acs.org/rss/materials.xml",
+            "https://cen.acs.org/rss/materials.xml", 
             "https://battery-news.com/feed/",
             "https://onlinelibrary.wiley.com/feed/15214095/most-recent"
         ]
@@ -152,23 +152,23 @@ CLUSTERS = {
         "urls": [
             "https://rusi.org/rss.xml",
             "https://warontherocks.com/feed/",
-            "https://www.rand.org/news/politics-and-government.xml",
-            "https://mwi.westpoint.edu/feed/",
+            "https://www.rand.org/news/politics-and-government.xml", 
+            "https://mwi.westpoint.edu/feed/", 
             "https://www.defensenews.com/arc/outboundfeeds/rss/",
             "https://news.usni.org/feed",
-            "https://www.understandingwar.org/feeds.xml",
+            "https://www.understandingwar.org/feeds.xml", 
             "https://www.janes.com/feeds/news",
-            "https://www.darpa.mil/rss/news"
+            "https://www.darpa.mil/rss/news" 
         ]
     },
     "11_GEO_STRATEGY": {
         "name": "GEOPOLITICA & DIPLOMAZIA",
         "desc": "Analisi globale.",
         "urls": [
-            "https://www.foreignaffairs.com/rss.xml",
-            "https://www.chathamhouse.org/rss/research/all",
-            "https://www.cfr.org/feed/all",
-            "https://aspistrategist.org.au/feed/",
+            "https://www.foreignaffairs.com/rss.xml", 
+            "https://www.chathamhouse.org/rss/research/all", 
+            "https://www.cfr.org/feed/all", 
+            "https://www.aspistrategist.org.au/feed/",
             "https://jamestown.org/feed/",
             "https://www.csis.org/rss/analysis",
             "https://thediplomat.com/feed/",
@@ -181,7 +181,7 @@ CLUSTERS = {
         "desc": "Banche Centrali.",
         "urls": [
             "https://www.bis.org/doclist/research.rss",
-            "https://www.nber.org/rss/new.xml",
+            "https://www.nber.org/rss/new.xml", 
             "https://www.federalreserve.gov/feeds/feds_rss.xml",
             "https://libertystreeteconomics.newyorkfed.org/feed/",
             "https://www.ecb.europa.eu/rss/wppub.xml",
@@ -198,7 +198,7 @@ CLUSTERS = {
             "https://oilprice.com/rss/main",
             "https://www.oxfordenergy.org/feed/",
             "https://iea.org/rss/news",
-            "https://www.nrel.gov/news/rss.xml",
+            "https://www.nrel.gov/news/rss.xml", 
             "https://www.world-nuclear-news.org/RSS/WNN-News.xml",
             "https://gcaptain.com/feed/",
             "https://news.mit.edu/rss/topic/energy"
