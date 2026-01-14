@@ -9,7 +9,7 @@ from groq import Groq
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 MAX_WORKERS = 5
 LOOKBACK_HOURS = 28  # Finestra ampia per non perdere nulla
-MAX_SECTION_CONTEXT = 30000 
+MAX_SECTION_CONTEXT = 15000  # Ridotto per gestire meglio il contesto
 
 if not GROQ_API_KEY:
     print("ERRORE: Manca GROQ_API_KEY.")
@@ -23,14 +23,14 @@ CLUSTERS = {
         "urls": [
             "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
-            "https://www.csail.mit.edu/news/feed", 
+            "https://www.csail.mit.edu/news/feed",
             "https://hai.stanford.edu/news/feed", 
             "https://bair.berkeley.edu/blog/feed.xml", 
-            "https://deepmind.google/blog/rss.xml",
+            "https://deepmind.google/blog/rss.xml", 
             "https://openai.com/blog/rss.xml",
             "https://research.google/blog/rss",
             "https://ai.meta.com/blog/rss.xml",
-            "https://huggingface.co/blog/feed.xml",
+            "https://huggingface.co/blog/feed.xml", 
             "https://www.microsoft.com/en-us/research/feed/"
         ]
     },
@@ -118,7 +118,7 @@ CLUSTERS = {
             "https://www.tomshardware.com/feeds/all",
             "https://www.servethehome.com/feed/", 
             "https://chipsandcheese.com/feed/", 
-            "https://www.nextplatform.com/feed/" 
+            "https://www.nextplatform.com/feed/"
         ]
     },
     "08_MATERIALS": {
@@ -139,7 +139,7 @@ CLUSTERS = {
         "urls": [
             "https://spacenews.com/feed/",
             "https://www.esa.int/rssfeed/Our_Activities/Operations",
-            "https://www.jpl.nasa.gov/feeds/news/", 
+            "https://www.jpl.nasa.gov/feeds/news/",
             "https://blogs.nasa.gov/station/feed/",
             "https://spaceflightnow.com/feed/",
             "https://gsp.esa.int/documents/10180/0/rss",
@@ -233,7 +233,8 @@ def fetch_feed(url):
                 link = entry.link
                 items.append(f"SRC: {source}\nLINK: {link}\nTITLE: {entry.title}\nTXT: {content}\n")
         return items
-    except:
+    except Exception as e:
+        print(f"Error fetching {url}: {str(e)}")
         return []
 
 def get_cluster_data(urls):
@@ -250,7 +251,7 @@ def analyze_cluster(cluster_key, info, raw_text):
     
     print(f"  > Analisi {cluster_key} ({len(raw_text)} chars)...")
     
-    # Prompt modificato per generare TANTI contenuti con link
+    # Prompt modificato per generare TANTI contenuti con link cliccabili
     system_prompt = f"""
     SEI: "Il Polimate", analista di intelligence.
     SETTORE: {info['name']}
@@ -270,14 +271,14 @@ def analyze_cluster(cluster_key, info, raw_text):
     FORMATO PER OGNI NOTIZIA (Usa Markdown):
     ### [Titolo con capitalizzazione italiana]
     [Analisi tecnica dettagliata di 4-5 righe. Spiega il 'cosa', il 'come' e il 'perché'. Usa termini tecnici.] [con capitalizzazione italiana]
-	[inserire riga di spazio]
-    **Fonte:** [Inserisci il LINK originale fornito] (DEVE ESSERE CLICCABILE)
+    [inserire riga di spazio]
+    **Fonte:** [Inserisci il LINK originale fornito] (DEVE ESSERE CLICCABILE COME MARKDOWN)
     
     STILE:
     - Densità informativa massima.
     - Italiano professionale.
     - NESSUNA INTRODUZIONE, NESSUNA CONCLUSIONE. Solo la lista delle analisi.
-	- NON UTILIZZARE <hv> 
+    - NON UTILIZZARE <hr> O LINEE ORIZZONTALI
     """
     
     try:
@@ -299,11 +300,32 @@ def analyze_cluster(cluster_key, info, raw_text):
 # --- 4. SEQUENCER ---
 print("Avvio MOTORE EPOCHALE...")
 today = datetime.datetime.now().strftime("%Y-%m-%d")
-display_date = datetime.datetime.now().strftime("%d %B %Y")
 
-full_report = f"""# IL POLIMATE: Edizione Estesa del {display_date}
-**Livello:** Deep Strategic Intelligence
-**Fonti:** 75+ Tier-0 Sources
+# Data in italiano
+today_date = datetime.datetime.now()
+month_name = today_date.strftime("%B")
+month_italian = {
+    "January": "gennaio",
+    "February": "febbraio",
+    "March": "marzo",
+    "April": "aprile",
+    "May": "maggio",
+    "June": "giugno",
+    "July": "luglio",
+    "August": "agosto",
+    "September": "settembre",
+    "October": "ottobre",
+    "November": "novembre",
+    "December": "dicembre"
+}.get(month_name, month_name)
+display_date = f"{today_date.day} {month_italian} {today_date.year}"
+
+full_report = f"""---
+title: "La rassegna del {display_date}"
+date: {today}
+layout: post
+excerpt: "Analisi granulare di oltre 12 settori strategici con centinaia di fonti primarie."
+---
 
 > Questo documento contiene un'analisi granulare di tutti i segnali rilevanti intercettati nelle ultime 24 ore. Ogni sezione approfondisce decine di paper, report e comunicati.
 
@@ -313,37 +335,31 @@ full_report = f"""# IL POLIMATE: Edizione Estesa del {display_date}
 for key, info in CLUSTERS.items():
     print(f"\n--- Processando Cluster: {info['name']} ---")
     
-    raw_data = get_cluster_data(info['urls'])
+    # Pulisci gli URL rimuovendo spazi e ritorni a capo
+    clean_urls = [url.strip() for url in info['urls']]
+    
+    raw_data = get_cluster_data(clean_urls)
     
     if raw_data:
+        print(f"  > Trovati {len(raw_data)} articoli per {info['name']}")
         raw_text = "\n---\n".join(raw_data)
         analysis = analyze_cluster(key, info, raw_text)
         
         if analysis and len(analysis) > 50:
-            full_report += f"\n\n## {info['name']}\n\n{analysis}\n\n<br><hr><br>\n"
+            full_report += f"\n\n## {info['name']}\n\n{analysis}\n\n"
         else:
             print("  > Nessun output rilevante dall'AI.")
     else:
         print("  > Nessun dato grezzo trovato.")
     
-    # Pausa per Rate Limit (fondamentale quando si fanno 12 chiamate pesanti)
-    time.sleep(10)
+    # Pausa più lunga per evitare rate limiting
+    time.sleep(20)
 
 # --- 5. SALVATAGGIO ---
 if not os.path.exists("_posts"): os.makedirs("_posts")
 filename = f"_posts/{today}-brief.md"
 
-markdown_file = f"""---
-title: "Dossier Esteso: {today}"
-date: {today}
-layout: post
-excerpt: "Edizione Monumentale. Analisi granulare di oltre 12 settori strategici con centinaia di fonti primarie."
----
-
-{full_report}
-"""
-
 with open(filename, "w", encoding='utf-8') as f:
-    f.write(markdown_file)
+    f.write(full_report)
 
 print("Dossier Epochale Generato.")
