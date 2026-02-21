@@ -1,4 +1,9 @@
 feedparser
 groq
+google-generativeai
+python-dotenv
 beautifulsoup4
+jinja2
 pytz
+lxml
+requests

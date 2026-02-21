@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa delle Tensioni | Il Polimate</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        body { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
+        #map { width: 100vw; height: 100vh; filter: contrast(1.2) grayscale(0.2); }
+        
+        .ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-left: 3px solid #d00;
+            max-width: 300px;
+        }
+        
+        .context-panel {
+            position: absolute;
+            right: -400px;
+            top: 0;
+            width: 350px;
+            height: 100%;
+            background: rgba(10,10,10,0.95);
+            border-left: 1px solid #333;
+            z-index: 1001;
+            padding: 30px;
+            box-sizing: border-box;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .context-panel.active { right: 0; }
+        
+        h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+        p.sub { font-size: 0.8rem; opacity: 0.7; margin-top: 5px; }
+        
+        .pulse-icon {
+            border-radius: 50%;
+            box-shadow: 0 0 0 rgba(255, 0, 0, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        
+        .category-conflict { background: #ff3333; }
+        .category-protest { background: #ff9900; }
+        .category-infra { background: #9933ff; }
+        
+        .panel-meta {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .panel-desc {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #ddd;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-layer">
+        <h1>MAPPA DELLE TENSIONI</h1>
+        <p class="sub">Osservatorio Sistemico Globale</p>
+        <div style="margin-top: 15px; font-size: 0.8rem;">
+            <div style="margin-bottom: 5px;"><span style="color:#ff3333">●</span> Conflitti Armati</div>
+            <div style="margin-bottom: 5px;"><span style="color:#ff9900">●</span> Instabilità Civile</div>
+            <div><span style="color:#9933ff">●</span> Eventi Critici</div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+    
+    <div class="context-panel" id="contextPanel">
+        <div class="close-btn" onclick="closePanel()">×</div>
+        <div id="panelContent">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Init Map (Dark Mode)
+        const map = L.map('map', {zoomControl: false}).setView([30, 10], 3);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        function getColor(cat) {
+            if(cat === 'CONFLICT') return '#ff3333';
+            if(cat === 'PROTEST') return '#ff9900';
+            if(cat === 'INFRASTRUCTURE_CRITICAL') return '#9933ff';
+            return '#888888';
+        }
+
+        // Fetch Data
+        fetch('/assets/data/tensions.json')
+            .then(res => res.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 6 + (feature.properties.intensity || 0),
+                            fillColor: getColor(feature.properties.category),
+                            color: "#000",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8,
+                            className: 'pulse-icon'
+                        });
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.on('click', function () {
+                            showPanel(feature.properties);
+                        });
+                    }
+                }).addTo(map);
+            })
+            .catch(err => console.log("Map Data Error:", err));
+
+        function showPanel(props) {
+            const panel = document.getElementById('contextPanel');
+            const content = document.getElementById('panelContent');
+            
+            content.innerHTML = `
+                <span class="panel-meta">${props.category} | INTENSITY: ${props.intensity}/10</span>
+                <h2 class="panel-title">${props.title}</h2>
+                <div class="panel-desc">${props.description}</div>
+            `;
+            
+            panel.classList.add('active');
+        }
+        
+        function closePanel() {
+            document.getElementById('contextPanel').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
