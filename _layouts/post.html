@@ -173,6 +173,90 @@ layout: default
 
     </article>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const clusters = document.querySelectorAll('.feed-cluster');
+            clusters.forEach(cluster => {
+                // Find all child elements that make up the content (skip header)
+                const header = cluster.querySelector('.cluster-header');
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'cluster-content-wrapper';
+                contentWrapper.style.transition = 'max-height 0.3s ease';
+                
+                // Move nodes sequentially
+                Array.from(cluster.childNodes).forEach(node => {
+                    if (node !== header && node.nodeName !== '#text' || (node.nodeName === '#text' && node.nodeValue.trim() !== '')) {
+                        contentWrapper.appendChild(node);
+                    }
+                });
+                
+                cluster.appendChild(contentWrapper);
+                
+                // If content is too tall, add Read More
+                // Set a small timeout to let the browser compute height
+                setTimeout(() => {
+                    if (contentWrapper.scrollHeight > 350) {
+                        contentWrapper.style.maxHeight = '350px';
+                        contentWrapper.style.overflow = 'hidden';
+                        contentWrapper.style.position = 'relative';
+
+                        const fadeOverlay = document.createElement('div');
+                        fadeOverlay.style.position = 'absolute';
+                        fadeOverlay.style.bottom = '0';
+                        fadeOverlay.style.left = '0';
+                        fadeOverlay.style.right = '0';
+                        fadeOverlay.style.height = '80px';
+                        fadeOverlay.style.background = 'linear-gradient(to bottom, transparent, var(--bg-color, white))';
+                        fadeOverlay.className = 'fade-overlay';
+                        contentWrapper.appendChild(fadeOverlay);
+
+                        const btn = document.createElement('button');
+                        btn.innerHTML = 'Continua a leggere &darr;';
+                        btn.style.display = 'block';
+                        btn.style.width = '100%';
+                        btn.style.padding = '10px';
+                        btn.style.marginTop = '15px';
+                        btn.style.background = 'transparent';
+                        btn.style.border = '1px solid currentColor';
+                        btn.style.color = 'currentColor';
+                        btn.style.cursor = 'pointer';
+                        btn.style.fontFamily = "'Inter', sans-serif";
+                        btn.style.fontWeight = '600';
+                        btn.style.textTransform = 'uppercase';
+                        btn.style.letterSpacing = '1px';
+                        btn.style.borderRadius = '4px';
+
+                        btn.onclick = function() {
+                            if (contentWrapper.style.maxHeight === '350px') {
+                                contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
+                                fadeOverlay.style.display = 'none';
+                                btn.innerHTML = 'Riduci &uarr;';
+                            } else {
+                                contentWrapper.style.maxHeight = '350px';
+                                fadeOverlay.style.display = 'block';
+                                btn.innerHTML = 'Continua a leggere &darr;';
+                            }
+                        };
+                        
+                        cluster.appendChild(btn);
+                    }
+                }, 100);
+            });
+            
+            // Applica il colore di background alla sfumatura in base al tema
+            const isDark = document.body.classList.contains('dark-mode');
+            document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
+        });
+        
+        // Ascolta anche il cambio tema per aggiornare il colore di sfumatura
+        const originalToggleDark = window.toggleDark;
+        window.toggleDark = function() {
+            if(originalToggleDark) originalToggleDark();
+            const isDark = document.body.classList.contains('dark-mode');
+            document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
+        }
+    </script>
+
     <div style="height: 100px;"></div>
 
 </div>
