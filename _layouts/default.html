@@ -56,21 +56,25 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
         }
 
         .nav-brand {
             font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 900;
-            color: inherit;
+            color: #d00;
             text-decoration: none;
             letter-spacing: -0.5px;
+            flex: 1;
+            /* Pushes center items to middle */
         }
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 40px;
+            flex: 1;
+            justify-content: center;
         }
 
         .nav-links a {
@@ -94,9 +98,12 @@
             border: none;
             cursor: pointer;
             color: inherit;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             padding: 5px;
             transition: opacity 0.2s;
+            flex: 1;
+            text-align: right;
+            /* Pushes to far right */
         }
 
         .nav-theme-btn:hover {
@@ -123,7 +130,8 @@
         }
 
         .wrapper {
-            max-width: 900px;
+            max-width: 1200px;
+            /* Increased from 900px to match map width */
             margin: 0 auto;
             padding: 20px;
         }
@@ -345,7 +353,8 @@
         <nav class="site-nav">
             <a href="{{ site.baseurl }}/" class="nav-brand">IL POLIMATE</a>
             <div class="nav-links">
-                <a href="{{ site.baseurl }}/" {% if page.url=='/' %}class="active" {% endif %}>Edizione</a>
+                <a href="{{ site.baseurl }}/" {% if page.url=='/' %}class="active" {% endif %} title="Home"><i
+                        class="fas fa-home"></i></a>
                 <a href="{{ site.baseurl }}/map.html" {% if page.url contains 'map' %}class="active" {% endif
                     %}>Mappa</a>
                 <a href="{{ site.baseurl }}/archivio/" {% if page.url contains 'archivio' %}class="active" {% endif

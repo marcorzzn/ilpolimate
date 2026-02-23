@@ -47,36 +47,278 @@ title: Home
 <!-- Main Feature (Meccanismi / Daily Brief) -->
 {% assign latest = site.posts.first %}
 {% if latest %}
-<div style="margin-bottom: 60px; text-align: center;">
-    <div
-        style="font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #000; display: inline-block; margin-bottom: 15px; letter-spacing: 1px;">
-        La rassegna del {{ latest.date | date: "%d" }}
-        {% assign month = latest.date | date: "%B" %}
-        {% case month %}
-        {% when 'January' %}gennaio
-        {% when 'February' %}febbraio
-        {% when 'March' %}marzo
-        {% when 'April' %}aprile
-        {% when 'May' %}maggio
-        {% when 'June' %}giugno
-        {% when 'July' %}luglio
-        {% when 'August' %}agosto
-        {% when 'September' %}settembre
-        {% when 'October' %}ottobre
-        {% when 'November' %}novembre
-        {% when 'December' %}dicembre
-        {% endcase %}
-        {{ latest.date | date: "%Y" }}
+<div style="margin-bottom: 60px;">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <div
+            style="font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #000; display: inline-block; margin-bottom: 15px; letter-spacing: 1px;">
+            La rassegna del {{ latest.date | date: "%d" }}
+            {% assign month = latest.date | date: "%B" %}
+            {% case month %}
+            {% when 'January' %}gennaio
+            {% when 'February' %}febbraio
+            {% when 'March' %}marzo
+            {% when 'April' %}aprile
+            {% when 'May' %}maggio
+            {% when 'June' %}giugno
+            {% when 'July' %}luglio
+            {% when 'August' %}agosto
+            {% when 'September' %}settembre
+            {% when 'October' %}ottobre
+            {% when 'November' %}novembre
+            {% when 'December' %}dicembre
+            {% endcase %}
+            {{ latest.date | date: "%Y" }}
+        </div>
     </div>
-    <br>
 
-    <a href="{{ latest.url | relative_url }}" class="feature-title" style="display: block; margin-top: 10px;">
-        {{ latest.title }}
-    </a>
+    <!-- Contenuto completo dell'ultimo post -->
+    <article style="font-family: 'Inter', sans-serif; font-size: 1.2rem; line-height: 1.6; color: inherit;">
+        <style>
+            /* Stili condivisi con post.html per l'editoriale e il feed */
+            .section-title {
+                font-family: 'Playfair Display', serif;
+                font-size: 2.2rem;
+                margin-top: 60px;
+                margin-bottom: 30px;
+                font-weight: 900;
+                color: inherit;
+                border-bottom: 2px solid currentColor;
+                padding-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-align: center;
+            }
 
-    <a href="{{ latest.url | relative_url }}" class="read-btn" style="margin-top: 20px; display: inline-block;">
-        LEGGI IL DOCUMENTO &rarr;
-    </a>
+            .editorial-text {
+                column-count: 3;
+                column-gap: 40px;
+                column-rule: 1px solid #ddd;
+                text-align: justify;
+                font-family: 'Georgia', serif;
+                font-size: 1.1rem;
+                line-height: 1.7;
+            }
+
+            .editorial-text>p:first-of-type::first-letter {
+                font-family: 'Playfair Display', serif;
+                font-size: 5rem;
+                float: left;
+                line-height: 0.8;
+                margin-right: 12px;
+                margin-top: 5px;
+                color: #000;
+            }
+
+            @media (max-width: 900px) {
+                .editorial-text {
+                    column-count: 2;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .editorial-text {
+                    column-count: 1;
+                    text-align: left;
+                }
+            }
+
+            /* Feed Grid System */
+            .feed-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 30px;
+                margin-top: 20px;
+            }
+
+            .feed-cluster {
+                background: #fff;
+                border: 1px solid #eaeaea;
+                border-top: 4px solid #111;
+                padding: 25px;
+                border-radius: 4px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+                transition: transform 0.2s;
+            }
+
+            .feed-cluster:hover {
+                transform: translateY(-5px);
+            }
+
+            .cluster-header {
+                font-family: 'Playfair Display', serif;
+                font-size: 1.4rem;
+                font-weight: 900;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+                color: #111;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .news-item {
+                margin-top: 25px;
+                padding-bottom: 25px;
+                border-bottom: 1px dashed #eee;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .news-item h3 {
+                font-family: 'Inter', sans-serif;
+                font-size: 1.15rem;
+                font-weight: 700;
+                margin-top: 0;
+                margin-bottom: 10px;
+                color: #222;
+                line-height: 1.4;
+            }
+
+            .news-item p {
+                margin-bottom: 15px;
+                font-size: 0.95rem;
+                text-align: left;
+                color: #444;
+            }
+
+            .news-item p.source-link a,
+            article a {
+                color: #d00;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.85em;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .news-item p.source-link a:hover,
+            article a:hover {
+                text-decoration: underline;
+            }
+
+            article ul {
+                padding-left: 20px;
+                margin-bottom: 20px;
+            }
+
+            article li {
+                margin-bottom: 10px;
+                font-size: 0.95rem;
+            }
+
+            article hr {
+                display: none;
+            }
+
+            body.dark-mode .feed-cluster {
+                background: #1a1a1a;
+                border-color: #333;
+                border-top-color: #555;
+            }
+
+            body.dark-mode .cluster-header {
+                color: #f0f0f0;
+                border-bottom-color: #333;
+            }
+
+            body.dark-mode .news-item {
+                border-bottom-color: #333;
+            }
+
+            body.dark-mode .news-item h3 {
+                color: #fff;
+            }
+
+            body.dark-mode .news-item p {
+                color: #ccc;
+            }
+
+            body.dark-mode .editorial-text>p:first-of-type::first-letter {
+                color: #fff;
+            }
+
+            body.dark-mode .editorial-text {
+                column-rule-color: #444;
+            }
+        </style>
+
+        {{ latest.content }}
+    </article>
+
+    <!-- Script espansione feed condiviso con post.html -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const clusters = document.querySelectorAll('.feed-cluster');
+            clusters.forEach(cluster => {
+                const header = cluster.querySelector('.cluster-header');
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'cluster-content-wrapper';
+                contentWrapper.style.transition = 'max-height 0.3s ease';
+
+                Array.from(cluster.childNodes).forEach(node => {
+                    if (node !== header && node.nodeName !== '#text' || (node.nodeName === '#text' && node.nodeValue.trim() !== '')) {
+                        contentWrapper.appendChild(node);
+                    }
+                });
+
+                cluster.appendChild(contentWrapper);
+
+                setTimeout(() => {
+                    if (contentWrapper.scrollHeight > 350) {
+                        contentWrapper.style.maxHeight = '350px';
+                        contentWrapper.style.overflow = 'hidden';
+                        contentWrapper.style.position = 'relative';
+
+                        const fadeOverlay = document.createElement('div');
+                        fadeOverlay.style.position = 'absolute';
+                        fadeOverlay.style.bottom = '0';
+                        fadeOverlay.style.left = '0';
+                        fadeOverlay.style.right = '0';
+                        fadeOverlay.style.height = '80px';
+                        fadeOverlay.style.background = 'linear-gradient(to bottom, transparent, var(--bg-color, white))';
+                        fadeOverlay.className = 'fade-overlay';
+                        contentWrapper.appendChild(fadeOverlay);
+
+                        const btn = document.createElement('button');
+                        btn.innerHTML = 'Continua a leggere &darr;';
+                        btn.style.display = 'block';
+                        btn.style.width = '100%';
+                        btn.style.padding = '10px';
+                        btn.style.marginTop = '15px';
+                        btn.style.background = 'transparent';
+                        btn.style.border = '1px solid currentColor';
+                        btn.style.color = 'currentColor';
+                        btn.style.cursor = 'pointer';
+                        btn.style.fontFamily = "'Inter', sans-serif";
+                        btn.style.fontWeight = '600';
+                        btn.style.textTransform = 'uppercase';
+                        btn.style.letterSpacing = '1px';
+                        btn.style.borderRadius = '4px';
+
+                        btn.onclick = function () {
+                            if (contentWrapper.style.maxHeight === '350px') {
+                                contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
+                                fadeOverlay.style.display = 'none';
+                                btn.innerHTML = 'Riduci &uarr;';
+                            } else {
+                                contentWrapper.style.maxHeight = '350px';
+                                fadeOverlay.style.display = 'block';
+                                btn.innerHTML = 'Continua a leggere &darr;';
+                            }
+                        };
+
+                        cluster.appendChild(btn);
+                    }
+                }, 100);
+            });
+
+            const isDark = document.body.classList.contains('dark-mode');
+            document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
+        });
+    </script>
 </div>
 {% else %}
 <div style="margin-bottom: 60px; text-align: center; border: 1px dashed #ccc; padding: 40px; border-radius: 8px;">
@@ -87,41 +329,3 @@ title: Home
     </p>
 </div>
 {% endif %}
-
-<!-- Navigation to Special Sections -->
-<div class="sections-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 60px;">
-    <a href="/map.html" class="section-card"
-        style="background: #111; color: #fff; padding: 40px; text-decoration: none; text-align: center; border-radius: 4px; transition: transform 0.2s;">
-        <h3 style="font-family: 'Playfair Display', serif; margin: 0; font-size: 1.8rem;">Mappa delle Tensioni</h3>
-        <p style="font-family: 'Inter', sans-serif; font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Cartografia
-            dinamica dei conflitti globali.</p>
-    </a>
-    <a href="/archivio/" class="section-card"
-        style="border: 2px solid #000; padding: 40px; text-align: center; text-decoration: none; color: inherit; border-radius: 4px; transition: background 0.2s, color 0.2s;">
-        <h3 style="font-family: 'Playfair Display', serif; margin: 0; font-size: 1.8rem;">Archivio Storico</h3>
-        <p
-            style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #666; margin-top: 10px; transition: color 0.2s;">
-            Tutte le analisi cronologiche passate.</p>
-    </a>
-</div>
-
-<style>
-    .sections-grid a:hover {
-        transform: translateY(-3px);
-    }
-
-    .sections-grid a[href='/archivio/']:hover {
-        background: #000;
-        color: #fff !important;
-    }
-
-    .sections-grid a[href='/archivio/']:hover p {
-        color: #ddd !important;
-    }
-
-    @media (max-width: 600px) {
-        .sections-grid {
-            grid-template-columns: 1fr !important;
-        }
-    }
-</style>

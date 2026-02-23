@@ -33,20 +33,21 @@ class ContentAnalyzer:
         
         INSTRUCTIONS:
         1. Scan ALL items.
-        2. Identify the top 3-5 most significant technical or strategic developments.
-        3. For each development, write a structured block.
+        2. Identify the top 2-3 most significant technical or strategic developments.
+        3. For each development, write a structured HTML block (NO MARKDOWN).
         
-        BLOCK FORMAT (Markdown):
-        ### [Italian Title, Technical & Impactful]
-        [Body: 4-5 sentences in professional Italian. Focus on the 'Mechanism' (how it works) and 'Implication' (what it means). No fluff.]
-        **Fonte:** [Source Name](Current_Link_From_Input)
+        BLOCK FORMAT (Strict HTML):
+        <div class="news-item">
+            <h3>[Italian Title, Elegante & Impattante]</h3>
+            <p>[Body: 3-4 sentences in elegant, astute, cultured Italian. Focus on the core mechanism and implication. Not too verbose.]</p>
+            <p class="source-link"><a href="Current_Link_From_Input" target="_blank">Fonte: Source Name</a></p>
+        </div>
         
         CRITICAL RULES:
         - Strict Italian Language.
-        - TONE: Cold, Detached, Analytical. No hype, no adjectives like "revolutionary" unless technically accurate.
-        - Merge duplicate stories into one comprehensive analysis.
-        - Prioritize Tier-1 sources (Nature, Science, Official Reports).
-        - Direct links only.
+        - TONE: Elegant, astute, cultured, analytical. Not overly verbose.
+        - Merge duplicate stories.
+        - Output ONLY HTML, without markdown code fences like ```html.
         """
 
         try:
@@ -72,19 +73,16 @@ class ContentAnalyzer:
         
         prompt = """
         ACT AS: Systemic Editor for 'Il Polimate'.
-        TASK: Write the daily 'Meccanismi' Editorial.
+        TASK: Seleziona la notizia o il macro-trend più importante in assoluto a livello globale tra quelli forniti, e scrivi l'editoriale da prima pagina 'Meccanismi'.
         
-        PHILOSOPHY: "Mechanism over Narrative". We explain HOW things happen, not just WHAT happened.
+        PHILOSOPHY: L'analisi deve essere acuta, scaltra, colta ed erudita, ma mai inutilmente verbosa. Spiega i legami profondi tra geopolitica, tecnologia ed economia.
         
         STRUCTURE:
-        TITOLO: [Titolo Concettuale] - [Sottotitolo Sistemico]
+        TITOLO: [Titolo Elegante e d'Impatto] - [Sottotitolo]
         
-        1. **SINTESI SISTEMICA**: Where does this fit in the global machine?
-        2. **ARCHITETTURA CAUSALE**: The chain of events/variables.
-        3. **VETTORI DI EVOLUZIONE**: Future trajectory based on data.
-        4. **INTERSEZIONI**: Unexpected connections with other fields.
+        Scrivi 3-4 paragrafi fluidi (senza bullet points).
         
-        OUTPUT: Markdown formatted. Professional, Academic/Intelligence Tone. Italian.
+        OUTPUT: Markdown formatted per il testo (paragrafi semplici, grassetti dove serve). Stile giornalistico d'alto livello. Italiano.
         """
         
         try:

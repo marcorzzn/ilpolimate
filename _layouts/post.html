@@ -98,23 +98,36 @@ layout: default
             }
 
             /* Sottotitoli News nel Feed */
-            .feed-cluster h3 {
-                font-family: 'Inter', sans-serif;
-                font-size: 1.1rem;
-                font-weight: 700;
+            .news-item {
                 margin-top: 25px;
+                padding-bottom: 25px;
+                border-bottom: 1px dashed #eee;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .news-item h3 {
+                font-family: 'Inter', sans-serif;
+                font-size: 1.15rem;
+                font-weight: 700;
+                margin-top: 0;
                 margin-bottom: 10px;
                 color: #222;
                 line-height: 1.4;
             }
 
-            .feed-cluster p {
+            .news-item p {
                 margin-bottom: 15px;
                 font-size: 0.95rem;
                 text-align: left;
+                color: #444;
             }
 
             /* Link Fonte: Rosso e discreto */
+            .news-item p.source-link a,
             article a {
                 color: #d00;
                 text-decoration: none;
@@ -124,11 +137,12 @@ layout: default
                 letter-spacing: 0.5px;
             }
 
+            .news-item p.source-link a:hover,
             article a:hover {
                 text-decoration: underline;
             }
 
-            /* Liste */
+            /* Liste generali dentro article */
             article ul {
                 padding-left: 20px;
                 margin-bottom: 20px;
@@ -156,8 +170,16 @@ layout: default
                 border-bottom-color: #333;
             }
 
-            body.dark-mode .feed-cluster h3 {
+            body.dark-mode .news-item {
+                border-bottom-color: #333;
+            }
+
+            body.dark-mode .news-item h3 {
                 color: #fff;
+            }
+
+            body.dark-mode .news-item p {
+                color: #ccc;
             }
 
             body.dark-mode .editorial-text>p:first-of-type::first-letter {
@@ -174,7 +196,7 @@ layout: default
     </article>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const clusters = document.querySelectorAll('.feed-cluster');
             clusters.forEach(cluster => {
                 // Find all child elements that make up the content (skip header)
@@ -182,16 +204,16 @@ layout: default
                 const contentWrapper = document.createElement('div');
                 contentWrapper.className = 'cluster-content-wrapper';
                 contentWrapper.style.transition = 'max-height 0.3s ease';
-                
+
                 // Move nodes sequentially
                 Array.from(cluster.childNodes).forEach(node => {
                     if (node !== header && node.nodeName !== '#text' || (node.nodeName === '#text' && node.nodeValue.trim() !== '')) {
                         contentWrapper.appendChild(node);
                     }
                 });
-                
+
                 cluster.appendChild(contentWrapper);
-                
+
                 // If content is too tall, add Read More
                 // Set a small timeout to let the browser compute height
                 setTimeout(() => {
@@ -226,7 +248,7 @@ layout: default
                         btn.style.letterSpacing = '1px';
                         btn.style.borderRadius = '4px';
 
-                        btn.onclick = function() {
+                        btn.onclick = function () {
                             if (contentWrapper.style.maxHeight === '350px') {
                                 contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
                                 fadeOverlay.style.display = 'none';
@@ -237,21 +259,21 @@ layout: default
                                 btn.innerHTML = 'Continua a leggere &darr;';
                             }
                         };
-                        
+
                         cluster.appendChild(btn);
                     }
                 }, 100);
             });
-            
+
             // Applica il colore di background alla sfumatura in base al tema
             const isDark = document.body.classList.contains('dark-mode');
             document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
         });
-        
+
         // Ascolta anche il cambio tema per aggiornare il colore di sfumatura
         const originalToggleDark = window.toggleDark;
-        window.toggleDark = function() {
-            if(originalToggleDark) originalToggleDark();
+        window.toggleDark = function () {
+            if (originalToggleDark) originalToggleDark();
             const isDark = document.body.classList.contains('dark-mode');
             document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
         }
