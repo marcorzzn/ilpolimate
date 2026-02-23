@@ -37,15 +37,15 @@ def main():
         
         # Analyze Cluster immediately (Parallelizable in future, sequential for now to save Rate Limits if any)
         print(f"   [{key}] Analyzing {len(items)} items...")
-        analysis = analyzer.analyze_cluster_gemini(info['name'], items)
+        analysis = analyzer.analyze_cluster_groq(info['name'], items)
         cluster_results[info['name']] = analysis
         time.sleep(2) # Politeness
         
     # 3. Holistic Phase (Meccanismi & Map)
-    print(">>> Phase 2: Holistic Analysis (Gemini Flash)...")
+    print(">>> Phase 2: Holistic Analysis (x.ai Grok)...")
     
     # Context aggregation (Title + Summary mainly to save tokens if massive)
-    # Gemini Flash has 1M context, so we can pass A LOT.
+    # Grok has 128k context, so we can pass A LOT.
     # We'll pass the string representation of all items.
     full_context_str = json.dumps(all_raw_items, default=str)[:3000000] # Hard cap just in case
     
@@ -58,9 +58,9 @@ def main():
     map_data = analyzer.analyze_tensions_map(full_context_str)
     generator.save_tensions_map(map_data)
     
-    # 4. Fast Phase (Ticker)
-    print(">>> Phase 3: Fast Generation (Groq)...")
-    ticker_data = analyzer.generate_ticker_headlines(all_raw_items)
+    # 4. Fast Phase (Ticker Finanziario)
+    print(">>> Phase 3: Market Data Generation (yfinance)...")
+    ticker_data = analyzer.generate_ticker_headlines([]) # Pass empty list, it fetches independently
     generator.save_ticker_data(ticker_data)
     
     # 5. Publishing

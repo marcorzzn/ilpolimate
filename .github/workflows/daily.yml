@@ -20,13 +20,14 @@ jobs:
         with:
           python-version: '3.9'
 
-      # Installiamo Groq e feedparser
+      # Installiamo le dipendenze da requirements.txt
       - name: Install Libraries
-        run: pip install groq feedparser
+        run: pip install -r requirements.txt
 
       - name: Run Generator Script
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
         run: python daily_brief.py
 
       - name: Commit and Push Report
@@ -34,5 +35,6 @@ jobs:
           git config --global user.name 'Polymath Bot'
           git config --global user.email 'bot@users.noreply.github.com'
           git add _posts/
+          git add assets/data/
           git commit -m "New Brief Generated on $(date)" || echo "Nessun cambiamento"
           git push

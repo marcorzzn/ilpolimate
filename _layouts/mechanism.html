@@ -1,0 +1,60 @@
+---
+layout: default
+---
+
+<div class="mechanism-container">
+    <div class="mechanism-header">
+        <span class="mechanism-label">ANALISI SISTEMICA</span>
+        <h1>{{ page.title }}</h1>
+        <p class="mechanism-meta">{{ page.date | date: "%d %B %Y" }}</p>
+    </div>
+
+    <article class="mechanism-body">
+        <style>
+            .mechanism-container {
+                max-width: 750px;
+                margin: 0 auto;
+                padding: 60px 20px;
+                background: #f9f9f9; /* Slight difference from white */
+                border-left: 1px solid #ccc;
+            }
+            .mechanism-header {
+                margin-bottom: 50px;
+                text-align: left;
+            }
+            .mechanism-label {
+                font-family: 'Inter', sans-serif;
+                font-size: 0.8rem;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: #d00;
+                font-weight: 700;
+            }
+            .mechanism-header h1 {
+                font-family: 'Playfair Display', serif;
+                font-size: 3rem;
+                line-height: 1.1;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+            .mechanism-body {
+                font-family: 'Georgia', serif; /* Higher reading density */
+                font-size: 1.15rem;
+                line-height: 1.8;
+                color: #222;
+            }
+            .mechanism-body h2 {
+                font-family: 'Inter', sans-serif;
+                font-size: 1rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-top: 40px;
+                border-bottom: 1px solid #000;
+                padding-bottom: 5px;
+            }
+        </style>
+        
+        {{ content }}
+        
+    </article>
+</div>

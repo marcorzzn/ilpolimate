@@ -1,29 +1,40 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta name="google-site-verification" content="V1dmn62hrnxnnXdHHqBkHLo-e3tioJs1SNoBUBllfEU" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <title>
         {% if page.title == "Home" %}
-            IL POLIMATE
+        IL POLIMATE
         {% else %}
-            {{ page.title }} | IL POLIMATE
+        {{ page.title }} | IL POLIMATE
         {% endif %}
     </title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         /* RESET E BASE */
-        body, html { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         /* NASCONDE HEADER E FOOTER STANDARD DI GITHUB */
-        header, footer { display: none !important; }
+        header,
+        footer {
+            display: none !important;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -31,6 +42,85 @@
             color: #111;
             line-height: 1.6;
             transition: background 0.3s, color 0.3s;
+        }
+
+        /* HEADER NAVIGATION */
+        .site-header {
+            padding: 15px 40px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .site-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: inherit;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #444;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #000;
+        }
+
+        .nav-theme-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            font-size: 1.1rem;
+            padding: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .nav-theme-btn:hover {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 600px) {
+            .site-header {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+
+            .nav-brand {
+                display: none;
+            }
+
+            /* nascondi il titolo su mobile per far spazio al menu */
+            .site-nav {
+                justify-content: space-around;
+            }
         }
 
         .wrapper {
@@ -47,31 +137,62 @@
             display: flex;
             gap: 10px;
             z-index: 9999;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255, 255, 255, 0.8);
             padding: 8px;
-            border-radius: 50px; 
+            border-radius: 50px;
             backdrop-filter: blur(5px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .ctrl-btn {
-            background: #fff; border: 1px solid #ccc; color: #333;
-            width: 40px; height: 40px; border-radius: 50%;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.1em; text-decoration: none; transition: all 0.2s;
+            background: #fff;
+            border: 1px solid #ccc;
+            color: #333;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: all 0.2s;
         }
-        
-        .ctrl-btn:hover { 
-            transform: scale(1.1); border-color: #000; background: #000; color: #fff;
+
+        .ctrl-btn:hover {
+            transform: scale(1.1);
+            border-color: #000;
+            background: #000;
+            color: #fff;
         }
 
         /* DARK MODE */
-        body.dark-mode { background: #121212; color: #e0e0e0; }
-        body.dark-mode a { color: #fff; }
-        body.dark-mode .floating-controls { background: rgba(30,30,30,0.8); box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-        body.dark-mode .ctrl-btn { background: #222; border-color: #444; color: #fff; }
-        body.dark-mode .ctrl-btn:hover { background: #fff; color: #000; }
-        
+        body.dark-mode {
+            background: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode a {
+            color: #fff;
+        }
+
+        body.dark-mode .floating-controls {
+            background: rgba(30, 30, 30, 0.8);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .ctrl-btn {
+            background: #222;
+            border-color: #444;
+            color: #fff;
+        }
+
+        body.dark-mode .ctrl-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
         /* MASTHEAD STILE */
         .masthead {
             text-align: center;
@@ -80,35 +201,65 @@
             margin-bottom: 50px;
             margin-top: 20px;
         }
+
         .masthead-top {
-            font-family: 'Inter', sans-serif; font-size: 0.75rem; letter-spacing: 2px;
-            text-transform: uppercase; color: #555; margin-bottom: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #555;
+            margin-bottom: 10px;
         }
+
         .masthead-title {
-            font-family: 'Playfair Display', serif; font-size: 5rem; font-weight: 900;
-            letter-spacing: -2px; margin: 0; line-height: 0.9;
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin: 0;
+            line-height: 0.9;
         }
+
         .masthead-sub {
-            font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.4rem;
-            color: #444; margin-top: 10px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.4rem;
+            color: #444;
+            margin-top: 10px;
         }
-        
+
         /* ARTICOLO IN EVIDENZA */
         .feature-title {
-            font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700;
-            line-height: 1.1; color: #000; text-decoration: none; display: block; margin-bottom: 15px;
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #000;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 15px;
         }
+
         .read-btn {
-            display: inline-block; background: #000; color: #fff; padding: 10px 20px;
-            font-weight: 600; text-decoration: none; border-radius: 4px; margin-top: 10px;
+            display: inline-block;
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
         }
-        
+
         /* ARCHIVIO */
         .archive-title {
-            text-transform: uppercase; letter-spacing: 1px; color: #666;
-            font-family: 'Inter', sans-serif; font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
         }
-        
+
         /* STOCK TICKER */
         .stock-ticker {
             border: 1px solid #e0e0e0;
@@ -142,6 +293,7 @@
             0% {
                 transform: translateX(100%);
             }
+
             100% {
                 transform: translateX(-100%);
             }
@@ -156,24 +308,57 @@
         body.dark-mode .ticker-content a {
             color: #ff5555;
         }
-        
+
         /* DARK MODE OVERRIDES PER ARCHIVIO */
         body.dark-mode .archive-title {
             color: #e0e0e0;
         }
+
         body.dark-mode .archive-title a {
             color: #e0e0e0;
             border-bottom: 1px solid #666;
         }
+
         body.dark-mode .archive-title a:hover {
             color: #fff;
             border-bottom: 1px solid #fff;
         }
+
+        /* OVERRIDES DARK MODE HEADER */
+        body.dark-mode .site-header {
+            border-bottom-color: #444;
+        }
+
+        body.dark-mode .site-nav a {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .site-nav a:hover,
+        body.dark-mode .site-nav a.active {
+            color: #fff;
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="floating-controls">
+    <header class="site-header">
+        <nav class="site-nav">
+            <a href="{{ site.baseurl }}/" class="nav-brand">IL POLIMATE</a>
+            <div class="nav-links">
+                <a href="{{ site.baseurl }}/" {% if page.url=='/' %}class="active" {% endif %}>Edizione</a>
+                <a href="{{ site.baseurl }}/map.html" {% if page.url contains 'map' %}class="active" {% endif
+                    %}>Mappa</a>
+                <a href="{{ site.baseurl }}/archivio/" {% if page.url contains 'archivio' %}class="active" {% endif
+                    %}>Archivio</a>
+            </div>
+            <button class="nav-theme-btn" onclick="toggleDark()" title="Cambia Tema">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <div class="floating-controls" style="display: none;">
         <a href="{{ site.baseurl }}/" class="ctrl-btn" title="Torna alla Home"><i class="fas fa-home"></i></a>
         <button class="ctrl-btn" onclick="toggleDark()" title="Cambia Tema"><i class="fas fa-moon"></i></button>
     </div>
@@ -188,10 +373,11 @@
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
-        if(localStorage.getItem('theme') === 'dark') {
+        if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
     </script>
 
 </body>
+
 </html>

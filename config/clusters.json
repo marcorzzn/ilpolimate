@@ -1,0 +1,76 @@
+{
+    "01_SCIENCE_ORIGIN": {
+        "name": "SCIENCE & FRONTIER COMPUTE",
+        "description": "Primary scientific journals and foundational compute research.",
+        "urls": [
+            "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
+            "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
+            "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=40",
+            "https://www.nature.com/nature.rss",
+            "https://www.science.org/rss/news_current.xml",
+            "https://www.technologyreview.com/feed/",
+            "https://deepmind.google/blog/rss.xml",
+            "https://research.google/blog/rss/",
+            "https://huggingface.co/blog/feed.xml",
+            "https://openai.com/blog/rss.xml",
+            "https://ai.meta.com/blog/rss.xml"
+        ]
+    },
+    "02_BIO_HARDTECH": {
+        "name": "BIOTECH & HARDWARE",
+        "description": "Synthetic biology, hardware engineering, and materials.",
+        "urls": [
+            "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology",
+            "https://www.nature.com/nbt.rss",
+            "https://semiengineering.com/feed/",
+            "https://semianalysis.com/feed/",
+            "https://chipsandcheese.com/feed/",
+            "https://www.nextplatform.com/feed/",
+            "https://spectrum.ieee.org/feeds/feed.rss"
+        ]
+    },
+    "03_GEOPOLITICS_DEFENSE": {
+        "name": "GEOPOLITICS, DEFENSE & STRATEGY",
+        "description": "Strategic intelligence, defense analysis, and global conflict monitoring.",
+        "urls": [
+            "https://www.understandingwar.org/feeds.xml",
+            "https://warontherocks.com/feed/",
+            "https://www.bellingcat.com/feed/",
+            "https://www.cfr.org/rss/publications.xml",
+            "https://www.csis.org/rss/analysis",
+            "https://rusi.org/rss.xml",
+            "https://www.rand.org/news/politics-and-government.xml",
+            "https://www.foreignaffairs.com/rss.xml",
+            "https://thediplomat.com/feed/",
+            "https://www.janes.com/feeds/news",
+            "https://news.usni.org/feed",
+            "https://acleddata.com/feed/"
+        ]
+    },
+    "04_MACRO_ECONOMICS": {
+        "name": "MACROECONOMICS & CAPITAL FLOWS",
+        "description": "Central banks, global financial institutions, and economic research.",
+        "urls": [
+            "https://www.bis.org/doclist/research.rss",
+            "https://www.federalreserve.gov/feeds/feds_rss.xml",
+            "https://www.ecb.europa.eu/rss/wppub.xml",
+            "https://ftalphaville.ft.com/rss",
+            "https://www.imf.org/en/Publications/RSS?language=eng&series=IMF%20Working%20Papers",
+            "https://libertystreeteconomics.newyorkfed.org/feed/",
+            "https://www.worldbank.org/en/rss/research"
+        ]
+    },
+    "05_ENERGY_SPACE": {
+        "name": "ENERGY & SPACE ECONOMY",
+        "description": "Global energy markets, nuclear energy, and space exploration.",
+        "urls": [
+            "https://iea.org/rss/news",
+            "https://www.iaea.org/newscenter/pressreleases/feed",
+            "https://oilprice.com/rss/main",
+            "https://spacenews.com/feed/",
+            "https://www.esa.int/rssfeed/Our_Activities/Operations",
+            "https://www.jpl.nasa.gov/feeds/news/",
+            "https://spaceflightnow.com/feed/"
+        ]
+    }
+}

@@ -9,11 +9,11 @@ title: Home
     <div class="masthead-sub">L'ESSENZIALE STRATEGICO, OGNI MATTINA.</div>
 </div>
 
-<!-- Dynamic Ticker -->
+<!-- Dynamic Ticker (Mercati) -->
 <div class="stock-ticker">
     <div class="ticker-container">
         <div class="ticker-content" id="ticker-content">
-            <span>Caricamento Breaking News...</span>
+            <span>Caricamento Dati Finanziari...</span>
         </div>
     </div>
 </div>
@@ -26,10 +26,10 @@ title: Home
             if (data && data.length > 0) {
                 // Repeat the content to create a seamless loop effect if needed, 
                 // or just list them. CSS animation handles the scrolling.
-                const text = data.map(item => `<span class="ticker-item">⚡ ${item}</span>`).join('');
+                const text = data.map(item => `<span class="ticker-item">▪ ${item}</span>`).join('');
                 container.innerHTML = text + text; // Double for smoothness
             } else {
-                container.innerHTML = "<span>Nessuna breaking news al momento.</span>";
+                container.innerHTML = "<span>Nessun dato di mercato disponibile al momento.</span>";
             }
         })
         .catch(err => console.error('Ticker Error:', err));
@@ -81,33 +81,37 @@ title: Home
 <!-- Navigation to Special Sections -->
 <div class="sections-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 60px;">
     <a href="/map.html" class="section-card"
-        style="background: #111; color: #fff; padding: 40px; text-decoration: none; text-align: center;">
+        style="background: #111; color: #fff; padding: 40px; text-decoration: none; text-align: center; border-radius: 4px; transition: transform 0.2s;">
         <h3 style="font-family: 'Playfair Display', serif; margin: 0; font-size: 1.8rem;">Mappa delle Tensioni</h3>
         <p style="font-family: 'Inter', sans-serif; font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Cartografia
             dinamica dei conflitti globali.</p>
     </a>
-    <div class="section-card" style="border: 2px solid #000; padding: 40px; text-align: center;">
-        <h3 style="font-family: 'Playfair Display', serif; margin: 0; font-size: 1.8rem;">Archivio Meccanismi</h3>
-        <p style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #666; margin-top: 10px;">Analisi sistemica
-            profonda.</p>
-    </div>
+    <a href="/archivio/" class="section-card"
+        style="border: 2px solid #000; padding: 40px; text-align: center; text-decoration: none; color: inherit; border-radius: 4px; transition: background 0.2s, color 0.2s;">
+        <h3 style="font-family: 'Playfair Display', serif; margin: 0; font-size: 1.8rem;">Archivio Storico</h3>
+        <p
+            style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #666; margin-top: 10px; transition: color 0.2s;">
+            Tutte le analisi cronologiche passate.</p>
+    </a>
 </div>
 
-<div style="border-top: 1px solid #ddd; padding-top: 30px;">
-    <h4 class="archive-title">Archivio Analisi</h4>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
-        {% for post in site.posts offset:1 %}
-        <div class="archive-item">
-            <small style="color: #666; font-weight: 600;">
-                {{ post.date | date: "%d/%m/%Y" }}
-            </small>
-            <h3 style="margin-top: 5px; font-size: 1.1rem; line-height: 1.4;">
-                <a href="{{ post.url | relative_url }}"
-                    style="font-family: 'Playfair Display', serif; color: #000; text-decoration: none;">
-                    {{ post.title }}
-                </a>
-            </h3>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+<style>
+    .sections-grid a:hover {
+        transform: translateY(-3px);
+    }
+
+    .sections-grid a[href='/archivio/']:hover {
+        background: #000;
+        color: #fff !important;
+    }
+
+    .sections-grid a[href='/archivio/']:hover p {
+        color: #ddd !important;
+    }
+
+    @media (max-width: 600px) {
+        .sections-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>

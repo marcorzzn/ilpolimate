@@ -1,6 +1,6 @@
 feedparser
-groq
-google-generativeai
+yfinance
+openai
 python-dotenv
 beautifulsoup4
 jinja2

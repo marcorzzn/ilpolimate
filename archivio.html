@@ -1,0 +1,89 @@
+---
+layout: default
+title: Archivio
+permalink: /archivio/
+---
+
+<div style="max-width: 900px; margin: 0 auto; padding-top: 40px;">
+
+    <div style="text-align: center; margin-bottom: 50px; border-bottom: 4px double #000; padding-bottom: 30px;">
+        <h1
+            style="font-family: 'Playfair Display', serif; font-size: 3.5rem; line-height: 1.1; margin: 0; font-weight: 900; letter-spacing: -1px;">
+            Archivio Analisi
+        </h1>
+        <p style="font-family: 'Inter', sans-serif; opacity: 0.7; margin-top: 15px;">Tutte le edizioni de Il Polimate,
+            ordinate cronologicamente.</p>
+    </div>
+
+    <div class="archive-container">
+        {% assign posts_by_year = site.posts | group_by_exp: "post", "post.date | date: '%Y'" %}
+        {% for year in posts_by_year %}
+        <div class="archive-year">
+            <h2
+                style="font-family: 'Playfair Display', serif; font-size: 2.5rem; border-bottom: 2px solid #000; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px;">
+                {{ year.name }}</h2>
+
+            {% assign posts_by_month = year.items | group_by_exp: "post", "post.date | date: '%m'" %}
+            {% for month in posts_by_month %}
+
+            {% assign month_name = "" %}
+            {% case month.name %}
+            {% when '01' %}{% assign month_name = "Gennaio" %}
+            {% when '02' %}{% assign month_name = "Febbraio" %}
+            {% when '03' %}{% assign month_name = "Marzo" %}
+            {% when '04' %}{% assign month_name = "Aprile" %}
+            {% when '05' %}{% assign month_name = "Maggio" %}
+            {% when '06' %}{% assign month_name = "Giugno" %}
+            {% when '07' %}{% assign month_name = "Luglio" %}
+            {% when '08' %}{% assign month_name = "Agosto" %}
+            {% when '09' %}{% assign month_name = "Settembre" %}
+            {% when '10' %}{% assign month_name = "Ottobre" %}
+            {% when '11' %}{% assign month_name = "Novembre" %}
+            {% when '12' %}{% assign month_name = "Dicembre" %}
+            {% endcase %}
+
+            <h3
+                style="font-family: 'Inter', sans-serif; font-size: 1.5rem; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-top: 30px; margin-bottom: 15px;">
+                {{ month_name }}</h3>
+
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for post in month.items %}
+                <li
+                    style="margin-bottom: 15px; display: flex; align-items: baseline; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <time
+                        style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.9rem; color: #888; min-width: 100px;">{{
+                        post.date | date: "%d/%m/%Y" }}</time>
+                    <a href="{{ post.url | relative_url }}"
+                        style="font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: inherit; text-decoration: none; display: block; flex-grow: 1;">{{
+                        post.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    body.dark-mode .archive-year h2 {
+        border-bottom-color: #fff;
+    }
+
+    body.dark-mode .archive-container li {
+        border-bottom-color: #333;
+    }
+
+    body.dark-mode .archive-container time {
+        color: #aaa;
+    }
+
+    body.dark-mode .archive-container h3 {
+        color: #ccc;
+    }
+
+    .archive-container a:hover {
+        color: #d00;
+        text-decoration: underline;
+    }
+</style>

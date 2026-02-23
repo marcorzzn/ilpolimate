@@ -3,73 +3,176 @@ layout: default
 ---
 
 <div style="max-width: 800px; margin: 0 auto; padding-top: 40px;">
-    
+
     <div style="text-align: center; margin-bottom: 50px; border-bottom: 1px solid #e0e0e0; padding-bottom: 30px;">
-         <h1 style="font-family: 'Playfair Display', serif; font-size: 3.5rem; line-height: 1.1; margin: 0; font-weight: 900; color: inherit;">
+        <h1
+            style="font-family: 'Playfair Display', serif; font-size: 3.5rem; line-height: 1.1; margin: 0; font-weight: 900; color: inherit;">
             {{ page.title }}
-         </h1>
+        </h1>
     </div>
 
     <article style="font-family: 'Inter', sans-serif; font-size: 1.2rem; line-height: 1.6; color: inherit;">
-        
+
         <style>
             /* Titoli Sezioni: Playfair Display */
-            article h2 { 
-                font-family: 'Playfair Display', serif; 
-                font-size: 2.2rem; 
-                margin-top: 60px; 
-                margin-bottom: 25px; 
-                font-weight: 700;
+            .section-title {
+                font-family: 'Playfair Display', serif;
+                font-size: 2.2rem;
+                margin-top: 60px;
+                margin-bottom: 30px;
+                font-weight: 900;
                 color: inherit;
                 border-bottom: 2px solid currentColor;
                 padding-bottom: 10px;
-            }
-            
-            /* Sottotitoli News */
-            article h3 { 
-                font-family: 'Inter', sans-serif; 
-                font-size: 1.4rem; 
-                font-weight: 700; 
-                margin-top: 40px; 
-                margin-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-align: center;
             }
 
-            /* Testo NON Giustificato (Bandiera a sinistra) */
-            article p { 
-                margin-bottom: 25px; 
-                text-align: left; 
+            /* Editoriale a Colonne e Drop Cap */
+            .editorial-text {
+                column-count: 3;
+                column-gap: 40px;
+                column-rule: 1px solid #ddd;
+                text-align: justify;
+                font-family: 'Georgia', serif;
+                font-size: 1.1rem;
+                line-height: 1.7;
+            }
+
+            .editorial-text>p:first-of-type::first-letter {
+                font-family: 'Playfair Display', serif;
+                font-size: 5rem;
+                float: left;
+                line-height: 0.8;
+                margin-right: 12px;
+                margin-top: 5px;
+                color: #000;
+            }
+
+            @media (max-width: 900px) {
+                .editorial-text {
+                    column-count: 2;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .editorial-text {
+                    column-count: 1;
+                    text-align: left;
+                }
+            }
+
+            /* Feed Grid System */
+            .feed-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 30px;
+                margin-top: 20px;
+            }
+
+            .feed-cluster {
+                background: #fff;
+                border: 1px solid #eaeaea;
+                border-top: 4px solid #111;
+                padding: 25px;
+                border-radius: 4px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+                transition: transform 0.2s;
+            }
+
+            .feed-cluster:hover {
+                transform: translateY(-5px);
+            }
+
+            .cluster-header {
+                font-family: 'Playfair Display', serif;
+                font-size: 1.4rem;
+                font-weight: 900;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+                color: #111;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            /* Sottotitoli News nel Feed */
+            .feed-cluster h3 {
+                font-family: 'Inter', sans-serif;
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin-top: 25px;
+                margin-bottom: 10px;
+                color: #222;
+                line-height: 1.4;
+            }
+
+            .feed-cluster p {
+                margin-bottom: 15px;
+                font-size: 0.95rem;
+                text-align: left;
             }
 
             /* Link Fonte: Rosso e discreto */
-            article a { 
-                color: #d00; 
-                text-decoration: none; 
-                font-weight: 600; 
-                font-size: 0.9em;
+            article a {
+                color: #d00;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.85em;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
-            article a:hover { text-decoration: underline; }
+
+            article a:hover {
+                text-decoration: underline;
+            }
 
             /* Liste */
-            article ul { padding-left: 20px; margin-bottom: 30px; }
-            article li { margin-bottom: 10px; }
-            
+            article ul {
+                padding-left: 20px;
+                margin-bottom: 20px;
+            }
+
+            article li {
+                margin-bottom: 10px;
+                font-size: 0.95rem;
+            }
+
             /* Rimuove HR se presente */
-            article hr { display: none; }
-            
-            /* Migliora la leggibilità dei link di fonte */
-            .source-link {
-                display: block;
-                margin-top: 5px;
-                margin-bottom: 25px;
-                color: #d00;
-                font-weight: 600;
+            article hr {
+                display: none;
+            }
+
+            /* Dark Mode Support */
+            body.dark-mode .feed-cluster {
+                background: #1a1a1a;
+                border-color: #333;
+                border-top-color: #555;
+            }
+
+            body.dark-mode .cluster-header {
+                color: #f0f0f0;
+                border-bottom-color: #333;
+            }
+
+            body.dark-mode .feed-cluster h3 {
+                color: #fff;
+            }
+
+            body.dark-mode .editorial-text>p:first-of-type::first-letter {
+                color: #fff;
+            }
+
+            body.dark-mode .editorial-text {
+                column-rule-color: #444;
             }
         </style>
 
         {{ content }}
-    
+
     </article>
-    
+
     <div style="height: 100px;"></div>
 
 </div>
