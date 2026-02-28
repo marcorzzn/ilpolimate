@@ -8,3 +8,4 @@ pytz
 lxml
 requests
 gTTS
+markdown
