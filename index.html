@@ -307,7 +307,23 @@ title: Home
             }
         </style>
 
+        <style>
+            /* Hide the feed section on index.html, only show Editorial */
+            .feed-section {
+                display: none !important;
+            }
+        </style>
         {{ latest.content }}
+
+        <!-- Invito alla Rassegna -->
+        <div style="text-align: center; margin-top: 50px; border-top: 1px solid #eaeaea; padding-top: 40px;">
+            <a href="{{ site.baseurl }}{{ latest.url }}"
+                style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; color: #111; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; display: inline-block; padding-bottom: 5px; border-bottom: 2px solid #d00;">
+                &rarr; LA RASSEGNA DEL GIORNO
+            </a>
+            <p style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #666; margin-top: 15px;">Clicca qui per
+                i feed strategici e l'intelligence orizzontale.</p>
+        </div>
     </article>
 
     <!-- Script espansione feed condiviso con post.html -->

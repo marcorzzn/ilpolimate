@@ -45,13 +45,9 @@ categories: [brief]
                 tts.save(audio_path)
                 
                 audio_html = f'''
-                <div style="margin-top: 20px; text-align: center; border: 1px solid #eaeaea; padding: 15px; border-radius: 8px; background: #fff;">
-                    <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; text-transform: uppercase; color: #555; margin-bottom: 10px; letter-spacing: 1px;">
-                        <i class="fas fa-headphones" style="margin-right: 5px;"></i> Ascolta l'Editoriale
-                    </div>
-                    <audio controls style="width: 100%; max-width: 400px;">
+                <div style="margin-top: -10px; margin-bottom: 30px; text-align: center;">
+                    <audio controls style="height: 35px; width: 100%; max-width: 300px; opacity: 0.85;">
                         <source src="/assets/audio/{audio_filename}" type="audio/mpeg">
-                        Il tuo browser non supporta l'elemento audio.
                     </audio>
                 </div>
                 '''
@@ -62,10 +58,10 @@ categories: [brief]
             md += f"""
 <div class="mechanism-section">
     <h2 class="section-title">L'EDITORIALE</h2>
+    {audio_html}
     <div class="editorial-text">
 {mechanism_html}
     </div>
-    {audio_html}
 </div>
 """
 

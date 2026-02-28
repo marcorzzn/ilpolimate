@@ -372,8 +372,8 @@
                         style="border:none; background:transparent; outline:none; padding:5px; font-family:'Inter', sans-serif; font-size:0.85rem; width:120px;" />
                 </form>
 
-                <a href="{{ site.baseurl }}/#triageSlider"
-                    style="background:#000; color:#fff; padding:5px 10px; border-radius:4px; font-size:0.8rem;">La
+                <a href="{{ site.baseurl }}{% if site.posts.first %}{{ site.posts.first.url }}{% else %}/archivio/{% endif %}"
+                    style="background:#000; color:#fff; padding:5px 10px; border-radius:4px; font-size:0.8rem; white-space:nowrap; text-decoration:none;">La
                     Rassegna</a>
 
                 <a href="{{ site.baseurl }}/map.html" {% if page.url contains 'map' %}class="active" {% endif

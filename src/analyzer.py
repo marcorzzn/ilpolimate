@@ -189,7 +189,11 @@ class ContentAnalyzer:
             intensity: 1-10
           }
         
-        EXTRACT FROM DATA PROVIDED. IF NO LOCATION, SKIP.
+        CRITICAL INSTRUCTIONS: 
+        1. Extract AS MANY EVENTS AS POSSIBLE. BE EXTREMELY GRANULAR. 
+        2. Do not summarize into 1-2 macro events. If there are 20 different country names, there should ideally be 20 different coordinates.
+        3. Mention ANY micro-conflict, protest, diplomatic tension, economic sanction, corporate shift, or border dispute you can find. 
+        4. IF NO EXACT LOCATION, GUESS THE NEAREST CAPITAL.
         """
         
         try:
