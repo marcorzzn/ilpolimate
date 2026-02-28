@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marcorzzn.github.io/ilpolimate/sitemap.xml
