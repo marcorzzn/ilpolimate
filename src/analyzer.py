@@ -3,16 +3,17 @@ import time
 from openai import OpenAI
 import yfinance as yf
 import json
+import re
 from bs4 import BeautifulSoup
 
 class ContentAnalyzer:
     def __init__(self):
-        # Setup Groq and x.ai (Grok)
+        # Setup Groq and Z.ai (ZhipuAI)
         self.groq_key = os.environ.get("GROQ_API_KEY")
-        self.xai_key = os.environ.get("XAI_API_KEY")
+        self.zai_key = os.environ.get("XAI_API_KEY") # User saved Z.ai key in XAI_API_KEY
         
         self.groq_client = OpenAI(api_key=self.groq_key, base_url="https://api.groq.com/openai/v1") if self.groq_key else None
-        self.xai_client = OpenAI(api_key=self.xai_key, base_url="https://api.x.ai/v1") if self.xai_key else None
+        self.zai_client = OpenAI(api_key=self.zai_key, base_url="https://open.bigmodel.cn/api/paas/v4/") if self.zai_key else None
 
     def analyze_cluster_groq(self, cluster_name, items):
         """Uses Groq for massive context analysis of a cluster."""
@@ -46,9 +47,7 @@ class ContentAnalyzer:
         
         CRITICAL RULES:
         - Strict Italian Language.
-        - TONE: Elegant, astute, cultured, analytical. Not overly verbose.
-        - Merge duplicate stories.
-        - Output ONLY HTML, without markdown code fences like ```html.
+        - Output ONLY pure HTML. Do NOT include <a </div> typo. Ensure all tags are correctly closed.
         """
 
         try:
@@ -63,9 +62,23 @@ class ContentAnalyzer:
             )
             raw_html = response.choices[0].message.content
             
-            # Sanitize and fix broken HTML tags using BeautifulSoup
+            # 1. Regex Fix for Groq hallucinated unclosed A tag typos 
+            raw_html = re.sub(r'<\s*a\s*</div\s*>', '</a></div>', raw_html)
+            raw_html = raw_html.replace("<a </div>", "</a></div>")
+            
+            # 2. Sanitize and fix broken HTML tags using BeautifulSoup
             soup = BeautifulSoup(raw_html, "html.parser")
-            return str(soup)
+            
+            # For each news-item, ensure it's not nested inside another news-item due to missing closing divs
+            clean_html = ""
+            for item in soup.find_all('div', class_='news-item', recursive=False):
+                clean_html += str(item) + "\n"
+                
+            # If the above fails to find top-level news-items, fallback to full soup
+            if not clean_html.strip():
+                clean_html = str(soup)
+                
+            return clean_html
             
         except Exception as e:
             print(f"Groq Error on {cluster_name}: {e}")
@@ -73,14 +86,14 @@ class ContentAnalyzer:
 
     def analyze_mechanism_daily(self, all_items_context):
         """Generates the 'Meccanismi' daily editorial."""
-        # Use xAI (Grok) if available to handle the massive context window (128k)
-        client = self.xai_client if self.xai_client else self.groq_client
-        model_name = "grok-beta" if self.xai_client else "llama-3.1-8b-instant"
+        # Use Z.ai (ZhipuAI) if available to handle the massive context window (128k)
+        client = self.zai_client if self.zai_client else self.groq_client
+        model_name = "glm-4-flash" if self.zai_client else "llama-3.1-8b-instant"
         
         if not client: return None
         
-        # If falling back to Groq, cap tightly to avoid rate limits. xAI can take more.
-        limit = 80000 if self.xai_client else 15000 
+        # If falling back to Groq, cap tightly to avoid rate limits. Z.ai can take more.
+        limit = 80000 if self.zai_client else 15000 
         context_sample = all_items_context[:limit]
         
         prompt = """
@@ -132,7 +145,6 @@ class ContentAnalyzer:
                     current = hist['Close'].iloc[-1]
                     change = ((current - last_close) / last_close) * 100
                     sign = "+" if change > 0 else ""
-                    # We store symbol ID inside the text to extract it in JS for Google Finance link
                     headline = f"{name} ({symbol}): {current:.2f} ({sign}{change:.2f}%)"
                     market_headlines.append(headline)
                 elif len(hist) == 1:
@@ -150,12 +162,12 @@ class ContentAnalyzer:
 
     def analyze_tensions_map(self, all_items_context):
         """Generates GeoJSON data for the Map of Tensions."""
-        client = self.xai_client if self.xai_client else self.groq_client
-        model_name = "grok-beta" if self.xai_client else "llama-3.1-8b-instant"
+        client = self.zai_client if self.zai_client else self.groq_client
+        model_name = "glm-4-flash" if self.zai_client else "llama-3.1-8b-instant"
         
         if not client: return {"type": "FeatureCollection", "features": []}
         
-        limit = 80000 if self.xai_client else 15000 
+        limit = 80000 if self.zai_client else 15000 
         
         prompt = """
         TASK: Extract "Tension Events" for a Geopolitical Map.
@@ -181,8 +193,6 @@ class ContentAnalyzer:
         """
         
         try:
-            # Note: grok-beta may not officially support response_format={"type": "json_object"} in the same way,
-            # but usually formatting the prompt strictly works. We'll try it.
             kwargs = {
                 "model": model_name,
                 "messages": [
@@ -191,7 +201,7 @@ class ContentAnalyzer:
                 ],
                 "temperature": 0.1
             }
-            if not self.xai_client:
+            if not self.zai_client:
                 kwargs["response_format"] = {"type": "json_object"}
                 
             response = client.chat.completions.create(**kwargs)
