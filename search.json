@@ -12,7 +12,7 @@ layout: null
             { post.content | strip_html | strip_newlines | jsonify
             }
         }
-    } {% unless forloop.last %
+    }{% unless forloop.last %
     },
     {% endunless %
     }
