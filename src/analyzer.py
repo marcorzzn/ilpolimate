@@ -3,13 +3,16 @@ import time
 from openai import OpenAI
 import yfinance as yf
 import json
+from bs4 import BeautifulSoup
 
 class ContentAnalyzer:
     def __init__(self):
         # Setup Groq and x.ai (Grok)
         self.groq_key = os.environ.get("GROQ_API_KEY")
+        self.xai_key = os.environ.get("XAI_API_KEY")
         
         self.groq_client = OpenAI(api_key=self.groq_key, base_url="https://api.groq.com/openai/v1") if self.groq_key else None
+        self.xai_client = OpenAI(api_key=self.xai_key, base_url="https://api.x.ai/v1") if self.xai_key else None
 
     def analyze_cluster_groq(self, cluster_name, items):
         """Uses Groq for massive context analysis of a cluster."""
@@ -58,16 +61,27 @@ class ContentAnalyzer:
                 temperature=0.2,
                 max_tokens=3000
             )
-            return response.choices[0].message.content
+            raw_html = response.choices[0].message.content
+            
+            # Sanitize and fix broken HTML tags using BeautifulSoup
+            soup = BeautifulSoup(raw_html, "html.parser")
+            return str(soup)
+            
         except Exception as e:
             print(f"Groq Error on {cluster_name}: {e}")
             return None
 
     def analyze_mechanism_daily(self, all_items_context):
         """Generates the 'Meccanismi' daily editorial."""
-        if not self.groq_client: return None
+        # Use xAI (Grok) if available to handle the massive context window (128k)
+        client = self.xai_client if self.xai_client else self.groq_client
+        model_name = "grok-beta" if self.xai_client else "llama-3.1-8b-instant"
         
-        context_sample = all_items_context[:30000] # Cap safely within groq limits
+        if not client: return None
+        
+        # If falling back to Groq, cap tightly to avoid rate limits. xAI can take more.
+        limit = 80000 if self.xai_client else 15000 
+        context_sample = all_items_context[:limit]
         
         prompt = """
         ACT AS: Systemic Editor for 'Il Polimate'.
@@ -84,8 +98,8 @@ class ContentAnalyzer:
         """
         
         try:
-            response = self.groq_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+            response = client.chat.completions.create(
+                model=model_name,
                 messages=[
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": f"GLOBAL CONTEXT:\n{context_sample}"}
@@ -94,12 +108,11 @@ class ContentAnalyzer:
             )
             return response.choices[0].message.content
         except Exception as e:
-            print(f"Groq Mechanism Error: {e}")
+            print(f"Mechanism Editor Error ({model_name}): {e}")
             return None
 
     def generate_ticker_headlines(self, items):
         """Uses yfinance for fast, free market data generation."""
-        # We don't need 'items' anymore for the ticker, we fetch market data instead.
         symbols = {
             "S&P 500": "^GSPC",
             "Nasdaq": "^IXIC",
@@ -113,18 +126,18 @@ class ContentAnalyzer:
         try:
             for name, symbol in symbols.items():
                 ticker = yf.Ticker(symbol)
-                # Fetch history for last 2 days to calculate % change
                 hist = ticker.history(period="2d")
                 if len(hist) >= 2:
                     last_close = hist['Close'].iloc[-2]
                     current = hist['Close'].iloc[-1]
                     change = ((current - last_close) / last_close) * 100
                     sign = "+" if change > 0 else ""
-                    headline = f"{name}: {current:.2f} ({sign}{change:.2f}%)"
+                    # We store symbol ID inside the text to extract it in JS for Google Finance link
+                    headline = f"{name} ({symbol}): {current:.2f} ({sign}{change:.2f}%)"
                     market_headlines.append(headline)
                 elif len(hist) == 1:
                     current = hist['Close'].iloc[-1]
-                    headline = f"{name}: {current:.2f}"
+                    headline = f"{name} ({symbol}): {current:.2f}"
                     market_headlines.append(headline)
                     
             if not market_headlines:
@@ -136,8 +149,13 @@ class ContentAnalyzer:
             return ["Dati mercati finanziari momentaneamente non disponibili."]
 
     def analyze_tensions_map(self, all_items_context):
-        """Generates GeoJSON data for the Map of Tensions using Groq."""
-        if not self.groq_client: return {"type": "FeatureCollection", "features": []}
+        """Generates GeoJSON data for the Map of Tensions."""
+        client = self.xai_client if self.xai_client else self.groq_client
+        model_name = "grok-beta" if self.xai_client else "llama-3.1-8b-instant"
+        
+        if not client: return {"type": "FeatureCollection", "features": []}
+        
+        limit = 80000 if self.xai_client else 15000 
         
         prompt = """
         TASK: Extract "Tension Events" for a Geopolitical Map.
@@ -163,21 +181,28 @@ class ContentAnalyzer:
         """
         
         try:
-            # We specifically request JSON output
-            response = self.groq_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
+            # Note: grok-beta may not officially support response_format={"type": "json_object"} in the same way,
+            # but usually formatting the prompt strictly works. We'll try it.
+            kwargs = {
+                "model": model_name,
+                "messages": [
                     {"role": "system", "content": prompt},
-                    {"role": "user", "content": f"NEWS DATA:\n{all_items_context[:30000]}"}
+                    {"role": "user", "content": f"NEWS DATA:\n{all_items_context[:limit]}"}
                 ],
-                temperature=0.1,
-                response_format={"type": "json_object"}
-            )
+                "temperature": 0.1
+            }
+            if not self.xai_client:
+                kwargs["response_format"] = {"type": "json_object"}
+                
+            response = client.chat.completions.create(**kwargs)
             raw_text = response.choices[0].message.content.strip()
-            # Safety checks in case output contains markdown blocks
+            
             if raw_text.startswith("```json"):
                 raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+            elif raw_text.startswith("```"):
+                raw_text = raw_text.replace("```", "").strip()
+                
             return json.loads(raw_text)
         except Exception as e:
-            print(f"Groq Map Error: {e}")
+            print(f"Map Generation Error ({model_name}): {e}")
             return {"type": "FeatureCollection", "features": []}

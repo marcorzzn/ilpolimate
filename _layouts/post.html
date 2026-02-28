@@ -240,63 +240,131 @@ layout: default
             const feedSection = document.querySelector('.feed-section');
             if (feedSection) {
                 const triageHTML = `
-                    <div class="triage-controls" style="text-align: center; margin-bottom: 30px;">
-                        <span style="font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-right: 15px;">Tempo di lettura:</span>
-                        <button class="triage-btn active" data-mode="completa">Completa</button>
-                        <button class="triage-btn" data-mode="5min">5 Minuti</button>
-                        <button class="triage-btn" data-mode="2min">2 Minuti</button>
+                    <div class="triage-controls" style="text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.02); border: 1px solid #eaeaea; padding: 25px; border-radius: 8px;">
+                        <div style="margin-bottom: 15px;">
+                            <span style="font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; text-transform: uppercase;">
+                                Tempo a disposizione: <span id="timeValDisplay" style="color: #d00;">Tutto</span>
+                            </span>
+                        </div>
+                        <input type="range" id="triageSlider" min="1" max="60" value="60" style="width: 100%; max-width: 400px; cursor: pointer;">
+                        
+                        <div style="margin-top: 25px;">
+                            <button id="ttsPlayBtn" style="font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #111; border-radius: 30px; cursor: pointer; background: #111; color: #fff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s;">
+                                <i class="fas fa-play" style="margin-right: 8px;"></i> Ascolta Sintesi Feed
+                            </button>
+                            <button id="ttsStopBtn" style="display: none; font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #d00; border-radius: 30px; cursor: pointer; background: #fff; color: #d00; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s; margin-left:10px;">
+                                <i class="fas fa-stop"></i> Ferma
+                            </button>
+                        </div>
                     </div>
                 `;
                 feedSection.insertAdjacentHTML('afterbegin', triageHTML);
 
-                const triageControls = document.querySelectorAll('.triage-btn');
-                triageControls.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        triageControls.forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        const mode = e.target.getAttribute('data-mode');
+                const slider = document.getElementById('triageSlider');
+                const timeDisplay = document.getElementById('timeValDisplay');
+                const clusters = document.querySelectorAll('.feed-cluster');
 
-                        const clusters = document.querySelectorAll('.feed-cluster');
-                        clusters.forEach((cluster, clusterIndex) => {
-                            const newsItems = cluster.querySelectorAll('.news-item');
+                // Words to reading time (approx 200 words per minute)
+                let totalWords = 0;
+                clusters.forEach(cluster => {
+                    const items = cluster.querySelectorAll('.news-item');
+                    items.forEach(item => {
+                        const words = item.innerText.split(/\s+/).length;
+                        item.dataset.words = words;
+                        totalWords += words;
+                    });
+                });
 
-                            if (mode === '2min') {
-                                if (clusterIndex >= 2) {
-                                    cluster.style.display = 'none';
-                                } else {
-                                    cluster.style.display = 'block';
-                                    newsItems.forEach((item, itemIndex) => {
-                                        item.style.display = itemIndex === 0 ? 'block' : 'none';
-                                    });
-                                }
-                            } else if (mode === '5min') {
-                                cluster.style.display = 'block';
-                                newsItems.forEach((item, itemIndex) => {
-                                    item.style.display = itemIndex < 2 ? 'block' : 'none';
-                                });
+                const totalEstimatedMinutes = Math.max(1, Math.ceil(totalWords / 200));
+                slider.max = totalEstimatedMinutes;
+                slider.value = totalEstimatedMinutes;
+
+                function updateFeed() {
+                    const targetMinutes = parseInt(slider.value);
+                    if (targetMinutes >= totalEstimatedMinutes) {
+                        timeDisplay.innerText = "Tutto (" + totalEstimatedMinutes + " min)";
+                    } else {
+                        timeDisplay.innerText = targetMinutes + (targetMinutes === 1 ? " Minuto" : " Minuti");
+                    }
+
+                    let runningWords = 0;
+                    const maxWords = targetMinutes * 200;
+
+                    clusters.forEach(cluster => {
+                        const items = cluster.querySelectorAll('.news-item');
+                        let clusterHasVisibleItems = false;
+
+                        items.forEach(item => {
+                            const words = parseInt(item.dataset.words);
+                            if (runningWords + words <= maxWords || targetMinutes >= totalEstimatedMinutes) {
+                                item.style.display = 'block';
+                                runningWords += words;
+                                clusterHasVisibleItems = true;
                             } else {
-                                cluster.style.display = 'block';
-                                newsItems.forEach(item => item.style.display = 'block');
-                            }
-
-                            // Re-evaluate 'Continua a leggere' button visibility based on height
-                            const wrapper = cluster.querySelector('.cluster-content-wrapper');
-                            const fade = cluster.querySelector('.fade-overlay');
-                            const moreBtn = cluster.querySelector('.read-more-btn');
-                            if (wrapper && mode !== 'completa') {
-                                wrapper.style.maxHeight = 'none';
-                                if (fade) fade.style.display = 'none';
-                                if (moreBtn) moreBtn.style.display = 'none';
-                            } else if (wrapper && mode === 'completa') {
-                                wrapper.style.maxHeight = '350px';
-                                if (fade) fade.style.display = 'block';
-                                if (moreBtn) {
-                                    moreBtn.style.display = 'block';
-                                    moreBtn.innerHTML = 'Continua a leggere &darr;';
-                                }
+                                item.style.display = 'none';
                             }
                         });
+
+                        if (clusterHasVisibleItems) {
+                            cluster.style.display = 'block';
+                        } else {
+                            cluster.style.display = 'none';
+                        }
                     });
+                }
+
+                slider.addEventListener('input', updateFeed);
+                // initial run
+                updateFeed();
+
+                // TTS Logic (Dynamic Web Speech API)
+                const playBtn = document.getElementById('ttsPlayBtn');
+                const stopBtn = document.getElementById('ttsStopBtn');
+                let synth = window.speechSynthesis;
+
+                playBtn.addEventListener('click', () => {
+                    if (synth.speaking) {
+                        synth.cancel();
+                    }
+
+                    // Collect text from currently visible items
+                    let textToRead = "Sintesi della rassegna strategica. ";
+                    clusters.forEach(cluster => {
+                        if (cluster.style.display !== 'none') {
+                            const header = cluster.querySelector('.cluster-header').innerText;
+                            textToRead += "Settore " + header + ". ";
+                            const items = cluster.querySelectorAll('.news-item');
+                            items.forEach(item => {
+                                if (item.style.display !== 'none' && item.querySelector('h3')) {
+                                    const title = item.querySelector('h3').innerText;
+                                    const bodyText = item.querySelector('p').innerText;
+                                    textToRead += title + ". " + bodyText + " ";
+                                }
+                            });
+                        }
+                    });
+
+                    const utterance = new SpeechSynthesisUtterance(textToRead);
+                    utterance.lang = 'it-IT';
+                    utterance.rate = 1.0;
+
+                    utterance.onstart = () => {
+                        playBtn.style.display = 'none';
+                        stopBtn.style.display = 'inline-block';
+                    };
+
+                    utterance.onend = () => {
+                        playBtn.style.display = 'inline-block';
+                        stopBtn.style.display = 'none';
+                    };
+
+                    synth.speak(utterance);
+                });
+
+                stopBtn.addEventListener('click', () => {
+                    synth.cancel();
+                    playBtn.style.display = 'inline-block';
+                    stopBtn.style.display = 'none';
                 });
             }
 
