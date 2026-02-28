@@ -29,16 +29,13 @@ def main():
         "https://www.reutersagency.com/feed/?best-regions=europe&post_type=best",
         "https://www.reutersagency.com/feed/?best-topics=political-general&post_type=best",
          # Associated Press (AP News)
-        "https://moxie.foxnews.com/google-publisher/world.xml", # AP proxy network often on fox/yahoo
-        "https://news.yahoo.com/rss/world", # Carries AP/AFP heavily
+        "https://moxie.foxnews.com/google-publisher/world.xml",
          # AFP 
-        "https://www.france24.com/en/rss", # Strong AFP carrier
+        "https://www.france24.com/en/rss", 
          # Italian Agencies 
          # ANSA
         "https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml",
         "https://www.ansa.it/sito/notizie/politica/politica_rss.xml",
-         # Adnkronos
-        "https://www.adnkronos.com/feed/",
          # AGI
         "https://www.agi.it/estero/rss"
     ]
@@ -61,6 +58,10 @@ def main():
     
     # Modify analyzer specifically for 6H Map with Agency sourcing
     map_data = analyzer.analyze_tensions_map(full_context_str)
+    
+    # Translate Ultima Ora titles
+    print(">>> Translating Ultima Ora Headlines to Italian...")
+    all_raw_items = analyzer.translate_ultima_ora_titles(all_raw_items)
     
     # Dump the raw feed for the Ultima Ora UI
     ultima_ora_path = os.path.join(generator.site_data_dir, "latest_news.json")

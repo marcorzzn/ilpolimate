@@ -103,7 +103,8 @@ class ContentAnalyzer:
         PHILOSOPHY: L'analisi deve essere acuta, scaltra, colta ed erudita, ma mai inutilmente verbosa. Spiega i legami profondi tra geopolitica, tecnologia ed economia.
         
         STRUCTURE:
-        TITOLO: [Titolo Elegante e d'Impatto] - [Sottotitolo]
+        Scrivi il Titolo Elegante e d'Impatto in grassetto o come Header Markdown, seguito dal Sottotitolo.
+        ASSOLUTAMENTE VIETATO scrivere testualmente le parole "TITOLO:" o "Sottotitolo:". Inizia direttamente con il vero titolo testuale.
         
         Scrivi 3-4 paragrafi fluidi (senza bullet points).
         
@@ -123,6 +124,50 @@ class ContentAnalyzer:
         except Exception as e:
             print(f"Mechanism Editor Error ({model_name}): {e}")
             return None
+
+    def translate_ultima_ora_titles(self, items):
+        """Translates the titles of the breaking news items to Italian."""
+        client = self.zai_client if self.zai_client else self.groq_client
+        model_name = "glm-4-flash" if self.zai_client else "llama-3.1-8b-instant"
+        
+        if not client or not items: return items
+        
+        # Batch translation to avoid token limits per request
+        batch_size = 40
+        for i in range(0, len(items), batch_size):
+            batch = items[i:i+batch_size]
+            titles_dict = {str(idx): item['title'] for idx, item in enumerate(batch)}
+            
+            prompt = """
+            Traduci tutti i seguenti titoli di notizie dall'inglese (o altra lingua) all'Italiano perfetto, giornalistico e conciso.
+            Restituisci ESATTAMENTE E SOLO un dizionario JSON valido dove le chiavi sono gli stessi numeri e i valori sono i titoli tradotti in italiano.
+            Non aggiungere commenti o backtick code blocks come ```json, solo l'oggetto JSON puro.
+            """
+            
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": prompt},
+                        {"role": "user", "content": json.dumps(titles_dict)}
+                    ],
+                    temperature=0.1
+                )
+                raw_text = response.choices[0].message.content.strip()
+                if raw_text.startswith("```json"):
+                    raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+                elif raw_text.startswith("```"):
+                    raw_text = raw_text.replace("```", "").strip()
+                    
+                translated_dict = json.loads(raw_text)
+                for key, translated_title in translated_dict.items():
+                    idx = int(key)
+                    if 0 <= idx < len(batch):
+                        batch[idx]['title'] = translated_title
+            except Exception as e:
+                print(f"Translation Error ({model_name}): {e}")
+                
+        return items
 
     def generate_ticker_headlines(self, items):
         """Uses yfinance for fast, free market data generation."""
