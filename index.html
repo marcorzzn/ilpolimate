@@ -539,13 +539,12 @@ title: Home
             document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
         });
     </script>
-</div> <!-- Aggiunta chiusura div qua -->
-{% else %}
-<div style="margin-bottom: 60px; text-align: center; border: 1px dashed #ccc; padding: 40px; border-radius: 8px;">
-    <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem;">Sistema in Inizializzazione</h2>
-    <p style="font-family: 'Inter', sans-serif; color: #666; max-width: 500px; margin: 10px auto;">
-        L'agente si sta sincronizzando con le fonti e con le API groq/grok.
-        I primi editoriali e i feed strategici appariranno qui a breve una volta completata l'analisi.
-    </p>
-</div>
-{% endif %}
+    {% else %}
+    <div style="margin-bottom: 60px; text-align: center; border: 1px dashed #ccc; padding: 40px; border-radius: 8px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem;">Sistema in Inizializzazione</h2>
+        <p style="font-family: 'Inter', sans-serif; color: #666; max-width: 500px; margin: 10px auto;">
+            L'agente si sta sincronizzando con le fonti e con le API groq/grok.
+            I primi editoriali e i feed strategici appariranno qui a breve una volta completata l'analisi.
+        </p>
+    </div>
+    {% endif %}
