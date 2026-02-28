@@ -216,7 +216,7 @@
         let mapDates = [];
         let geojsonLayer = null;
 
-        fetch('/assets/data/tensions.json')
+        fetch('{{ site.baseurl }}/assets/data/tensions.json')
             .then(res => {
                 if (!res.ok) {
                     throw new Error("HTTP " + res.status);
