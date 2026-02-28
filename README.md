@@ -2,7 +2,7 @@
 > **Automated Strategic Intelligence Engine**
 
 [![Daily Brief](https://github.com/marcorzzn/ilpolimate/actions/workflows/daily.yml/badge.svg)](https://github.com/marcorzzn/ilpolimate/actions/workflows/daily.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
 **Il Polimate** è un sistema completamente automatizzato di aggregazione e analisi notizie ("Open Source Intelligence" - OSINT). Ogni mattina, il sistema scansiona centinaia di feed RSS da fonti accademiche, governative e industriali, utilizza un LLM (Large Language Model) per estrarre solo le informazioni ad alto valore strategico e pubblica un dossier sintetico sul web.
 
@@ -49,3 +49,14 @@ Il "Radar" del Polimate copre 13 cluster strategici:
 * `.github/workflows/daily.yml`: Il file di configurazione che ordina a GitHub di eseguire lo script ogni mattina.
 * `_layouts/`: Contiene i template HTML per la visualizzazione grafica del sito.
 * `_config.yml`: Configurazione principale di Jekyll.
+
+---
+
+## ⚖️ Proprietà Intellettuale e Licenza
+
+**Copyright © 2026 Marco Razzano. Tutti i diritti riservati.**
+
+Questa repository e l'intero progetto "Il Polimate" (inclusi codice sorgente, layout, design, architettura e testi) sono **proprietà esclusiva di Marco Razzano**.  
+Non è concessa alcuna licenza open-source. È **severamente vietato** copiare, riprodurre, o utilizzare il codice sorgente o la struttura per ricreare progetti terzi, cloni o altre testate giornalistiche. Il codice è visibile pubblicamente a solo ed esclusivo scopo di portfolio personale e trasparenza tecnica.
+
+Per i termini completi, consultare il file [LICENSE](LICENSE).

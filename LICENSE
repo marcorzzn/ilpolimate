@@ -1,21 +1,15 @@
-MIT License
+Copyright (c) 2026 Marco Razzano. Tutti i diritti riservati. / All rights reserved.
 
-Copyright (c) 2026 Marco Razzano
+"Il Polimate" (inclusi il codice sorgente, il layout, il design, il marchio, l'architettura del sistema e i contenuti editoriali generati) costituisce proprietà intellettuale ed esclusiva di Marco Razzano.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+A CIUNQUE ACCEDA A QUESTA REPOSITORY NON È CONSENTITO:
+1. Copiare, riprodurre, modificare o distribuire il codice sorgente, in tutto o in parte.
+2. Clonare, copiare o utilizzare l'infrastruttura, il design o gli script di questa repository per creare progetti derivati, servizi simili o altre testate.
+3. Utilizzare il nome, il logo, o l'identità visiva de "Il Polimate".
+4. Sfruttare commercialmente, rivendere o monetizzare il codice o i contenuti qui presenti.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Questa repository è mantenuta pubblica esclusivamente per scopi di trasparenza, dimostrazione tecnica e portfolio personale dell'autore.
+La visibilità pubblica del codice su GitHub NON implica la concessione di alcuna licenza "open-source" (come MIT, GPL, ecc.) o di libero utilizzo. 
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Qualsiasi violazione di questi termini rappresenterà una violazione del diritto d'autore.
+Per qualsiasi richiesta di utilizzo, collaborazione o concessione di licenze commerciali, è necessario contattare preventivamente e direttamente l'autore per ottenere il permesso scritto.

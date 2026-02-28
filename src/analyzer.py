@@ -8,10 +8,8 @@ class ContentAnalyzer:
     def __init__(self):
         # Setup Groq and x.ai (Grok)
         self.groq_key = os.environ.get("GROQ_API_KEY")
-        self.xai_key = os.environ.get("XAI_API_KEY")
         
         self.groq_client = OpenAI(api_key=self.groq_key, base_url="https://api.groq.com/openai/v1") if self.groq_key else None
-        self.xai_client = OpenAI(api_key=self.xai_key, base_url="https://api.x.ai/v1") if self.xai_key else None
 
     def analyze_cluster_groq(self, cluster_name, items):
         """Uses Groq for massive context analysis of a cluster."""
@@ -67,9 +65,9 @@ class ContentAnalyzer:
 
     def analyze_mechanism_daily(self, all_items_context):
         """Generates the 'Meccanismi' daily editorial."""
-        if not self.xai_client: return None
+        if not self.groq_client: return None
         
-        context_sample = all_items_context[:300000] # Cap safely within grok-beta limits
+        context_sample = all_items_context[:30000] # Cap safely within groq limits
         
         prompt = """
         ACT AS: Systemic Editor for 'Il Polimate'.
@@ -86,8 +84,8 @@ class ContentAnalyzer:
         """
         
         try:
-            response = self.xai_client.chat.completions.create(
-                model="grok-beta",
+            response = self.groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": f"GLOBAL CONTEXT:\n{context_sample}"}
@@ -96,7 +94,7 @@ class ContentAnalyzer:
             )
             return response.choices[0].message.content
         except Exception as e:
-            print(f"x.ai (Grok) Mechanism Error: {e}")
+            print(f"Groq Mechanism Error: {e}")
             return None
 
     def generate_ticker_headlines(self, items):
@@ -138,8 +136,8 @@ class ContentAnalyzer:
             return ["Dati mercati finanziari momentaneamente non disponibili."]
 
     def analyze_tensions_map(self, all_items_context):
-        """Generates GeoJSON data for the Map of Tensions using x.ai (Grok)."""
-        if not self.xai_client: return {"type": "FeatureCollection", "features": []}
+        """Generates GeoJSON data for the Map of Tensions using Groq."""
+        if not self.groq_client: return {"type": "FeatureCollection", "features": []}
         
         prompt = """
         TASK: Extract "Tension Events" for a Geopolitical Map.
@@ -166,11 +164,11 @@ class ContentAnalyzer:
         
         try:
             # We specifically request JSON output
-            response = self.xai_client.chat.completions.create(
-                model="grok-beta",
+            response = self.groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": prompt},
-                    {"role": "user", "content": f"NEWS DATA:\n{all_items_context[:100000]}"}
+                    {"role": "user", "content": f"NEWS DATA:\n{all_items_context[:30000]}"}
                 ],
                 temperature=0.1,
                 response_format={"type": "json_object"}
@@ -181,5 +179,5 @@ class ContentAnalyzer:
                 raw_text = raw_text.replace("```json", "").replace("```", "").strip()
             return json.loads(raw_text)
         except Exception as e:
-            print(f"x.ai (Grok) Map Error: {e}")
+            print(f"Groq Map Error: {e}")
             return {"type": "FeatureCollection", "features": []}

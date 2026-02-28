@@ -63,7 +63,7 @@ today = datetime.datetime.now().strftime("%Y-%m-%d")
 display_date = datetime.datetime.now().strftime("%d %B %Y")
 
 post_content = f"""---
-title: "Analisi: {display_date}"
+title: "La rassegna del giorno - {display_date}"
 date: {today}
 layout: post
 categories: [brief]

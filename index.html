@@ -10,39 +10,49 @@ title: Home
 </div>
 
 <!-- Dynamic Ticker (Mercati) -->
-<div class="stock-ticker">
-    <div class="ticker-container">
-        <div class="ticker-content" id="ticker-content">
-            <span>Caricamento Dati Finanziari...</span>
-        </div>
+<div class="stock-ticker" style="border: none; background: transparent; margin: 15px 0;">
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
+            async>
+                {
+                    "symbols": [
+                        {
+                            "proName": "FOREXCOM:SPXUSD",
+                            "title": "S&P 500"
+                        },
+                        {
+                            "proName": "FOREXCOM:NSXUSD",
+                            "title": "US 100"
+                        },
+                        {
+                            "proName": "FX_IDC:EURUSD",
+                            "title": "EUR to USD"
+                        },
+                        {
+                            "proName": "BITSTAMP:BTCUSD",
+                            "title": "Bitcoin"
+                        },
+                        {
+                            "description": "Oro",
+                            "proName": "TVC:GOLD"
+                        },
+                        {
+                            "description": "Petrolio (WTI)",
+                            "proName": "TVC:USOIL"
+                        }
+                    ],
+                        "showSymbolLogo": true,
+                            "isTransparent": true,
+                                "displayMode": "adaptive",
+                                    "colorTheme": "light",
+                                        "locale": "it"
+                }
+            </script>
     </div>
+    <!-- TradingView Widget END -->
 </div>
-
-<script>
-    fetch('/assets/data/headlines.json')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('ticker-content');
-            if (data && data.length > 0) {
-                // Repeat the content to create a seamless loop effect if needed, 
-                // or just list them. CSS animation handles the scrolling.
-                const text = data.map(item => `<span class="ticker-item">▪ ${item}</span>`).join('');
-                container.innerHTML = text + text; // Double for smoothness
-            } else {
-                container.innerHTML = "<span>Nessun dato di mercato disponibile al momento.</span>";
-            }
-        })
-        .catch(err => console.error('Ticker Error:', err));
-</script>
-
-<style>
-    .ticker-item {
-        margin-right: 40px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-</style>
 
 <!-- Main Feature (Meccanismi / Daily Brief) -->
 {% assign latest = site.posts.first %}
@@ -243,6 +253,45 @@ title: Home
             body.dark-mode .editorial-text {
                 column-rule-color: #444;
             }
+
+            /* Triage Controls */
+            .triage-btn {
+                background: transparent;
+                border: 1px solid #ccc;
+                padding: 6px 15px;
+                margin: 0 5px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-family: 'Inter', sans-serif;
+                font-size: 0.85rem;
+                font-weight: 600;
+                transition: all 0.2s;
+            }
+
+            .triage-btn:hover {
+                background: #f0f0f0;
+            }
+
+            .triage-btn.active {
+                background: #111;
+                color: #fff;
+                border-color: #111;
+            }
+
+            body.dark-mode .triage-btn {
+                border-color: #555;
+                color: #ccc;
+            }
+
+            body.dark-mode .triage-btn:hover {
+                background: #333;
+            }
+
+            body.dark-mode .triage-btn.active {
+                background: #fff;
+                color: #000;
+                border-color: #fff;
+            }
         </style>
 
         {{ latest.content }}
@@ -251,6 +300,70 @@ title: Home
     <!-- Script espansione feed condiviso con post.html -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Triage Mode Logic
+            const feedSection = document.querySelector('.feed-section');
+            if (feedSection) {
+                const triageHTML = `
+                    <div class="triage-controls" style="text-align: center; margin-bottom: 30px;">
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-right: 15px;">Tempo di lettura:</span>
+                        <button class="triage-btn active" data-mode="completa">Completa</button>
+                        <button class="triage-btn" data-mode="5min">5 Minuti</button>
+                        <button class="triage-btn" data-mode="2min">2 Minuti</button>
+                    </div>
+                `;
+                feedSection.insertAdjacentHTML('afterbegin', triageHTML);
+
+                const triageControls = document.querySelectorAll('.triage-btn');
+                triageControls.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        triageControls.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const mode = e.target.getAttribute('data-mode');
+
+                        const clusters = document.querySelectorAll('.feed-cluster');
+                        clusters.forEach((cluster, clusterIndex) => {
+                            const newsItems = cluster.querySelectorAll('.news-item');
+
+                            if (mode === '2min') {
+                                if (clusterIndex >= 2) {
+                                    cluster.style.display = 'none';
+                                } else {
+                                    cluster.style.display = 'block';
+                                    newsItems.forEach((item, itemIndex) => {
+                                        item.style.display = itemIndex === 0 ? 'block' : 'none';
+                                    });
+                                }
+                            } else if (mode === '5min') {
+                                cluster.style.display = 'block';
+                                newsItems.forEach((item, itemIndex) => {
+                                    item.style.display = itemIndex < 2 ? 'block' : 'none';
+                                });
+                            } else {
+                                cluster.style.display = 'block';
+                                newsItems.forEach(item => item.style.display = 'block');
+                            }
+
+                            // Re-evaluate 'Continua a leggere' button visibility based on height
+                            const wrapper = cluster.querySelector('.cluster-content-wrapper');
+                            const fade = cluster.querySelector('.fade-overlay');
+                            const moreBtn = cluster.querySelector('.read-more-btn');
+                            if (wrapper && mode !== 'completa') {
+                                wrapper.style.maxHeight = 'none';
+                                if (fade) fade.style.display = 'none';
+                                if (moreBtn) moreBtn.style.display = 'none';
+                            } else if (wrapper && mode === 'completa') {
+                                wrapper.style.maxHeight = '350px';
+                                if (fade) fade.style.display = 'block';
+                                if (moreBtn) {
+                                    moreBtn.style.display = 'block';
+                                    moreBtn.innerHTML = 'Continua a leggere &darr;';
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+
             const clusters = document.querySelectorAll('.feed-cluster');
             clusters.forEach(cluster => {
                 const header = cluster.querySelector('.cluster-header');
@@ -283,6 +396,7 @@ title: Home
                         contentWrapper.appendChild(fadeOverlay);
 
                         const btn = document.createElement('button');
+                        btn.className = 'read-more-btn';
                         btn.innerHTML = 'Continua a leggere &darr;';
                         btn.style.display = 'block';
                         btn.style.width = '100%';

@@ -53,10 +53,13 @@ def main():
     print("   > Generating 'Meccanismi' Editorial...")
     mechanism_text = analyzer.analyze_mechanism_daily(full_context_str)
     
+    # 5. Publishing Prep
+    now = datetime.datetime.now()
+
     # B. Tensions Map
     print("   > Generating 'Mappa delle Tensioni' Data...")
     map_data = analyzer.analyze_tensions_map(full_context_str)
-    generator.save_tensions_map(map_data)
+    generator.save_tensions_map(map_data, now)
     
     # 4. Fast Phase (Ticker Finanziario)
     print(">>> Phase 3: Market Data Generation (yfinance)...")

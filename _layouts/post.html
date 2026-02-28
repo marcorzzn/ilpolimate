@@ -189,6 +189,45 @@ layout: default
             body.dark-mode .editorial-text {
                 column-rule-color: #444;
             }
+
+            /* Triage Controls */
+            .triage-btn {
+                background: transparent;
+                border: 1px solid #ccc;
+                padding: 6px 15px;
+                margin: 0 5px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-family: 'Inter', sans-serif;
+                font-size: 0.85rem;
+                font-weight: 600;
+                transition: all 0.2s;
+            }
+
+            .triage-btn:hover {
+                background: #f0f0f0;
+            }
+
+            .triage-btn.active {
+                background: #111;
+                color: #fff;
+                border-color: #111;
+            }
+
+            body.dark-mode .triage-btn {
+                border-color: #555;
+                color: #ccc;
+            }
+
+            body.dark-mode .triage-btn:hover {
+                background: #333;
+            }
+
+            body.dark-mode .triage-btn.active {
+                background: #fff;
+                color: #000;
+                border-color: #fff;
+            }
         </style>
 
         {{ content }}
@@ -197,6 +236,70 @@ layout: default
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Triage Mode Logic
+            const feedSection = document.querySelector('.feed-section');
+            if (feedSection) {
+                const triageHTML = `
+                    <div class="triage-controls" style="text-align: center; margin-bottom: 30px;">
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-right: 15px;">Tempo di lettura:</span>
+                        <button class="triage-btn active" data-mode="completa">Completa</button>
+                        <button class="triage-btn" data-mode="5min">5 Minuti</button>
+                        <button class="triage-btn" data-mode="2min">2 Minuti</button>
+                    </div>
+                `;
+                feedSection.insertAdjacentHTML('afterbegin', triageHTML);
+
+                const triageControls = document.querySelectorAll('.triage-btn');
+                triageControls.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        triageControls.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const mode = e.target.getAttribute('data-mode');
+
+                        const clusters = document.querySelectorAll('.feed-cluster');
+                        clusters.forEach((cluster, clusterIndex) => {
+                            const newsItems = cluster.querySelectorAll('.news-item');
+
+                            if (mode === '2min') {
+                                if (clusterIndex >= 2) {
+                                    cluster.style.display = 'none';
+                                } else {
+                                    cluster.style.display = 'block';
+                                    newsItems.forEach((item, itemIndex) => {
+                                        item.style.display = itemIndex === 0 ? 'block' : 'none';
+                                    });
+                                }
+                            } else if (mode === '5min') {
+                                cluster.style.display = 'block';
+                                newsItems.forEach((item, itemIndex) => {
+                                    item.style.display = itemIndex < 2 ? 'block' : 'none';
+                                });
+                            } else {
+                                cluster.style.display = 'block';
+                                newsItems.forEach(item => item.style.display = 'block');
+                            }
+
+                            // Re-evaluate 'Continua a leggere' button visibility based on height
+                            const wrapper = cluster.querySelector('.cluster-content-wrapper');
+                            const fade = cluster.querySelector('.fade-overlay');
+                            const moreBtn = cluster.querySelector('.read-more-btn');
+                            if (wrapper && mode !== 'completa') {
+                                wrapper.style.maxHeight = 'none';
+                                if (fade) fade.style.display = 'none';
+                                if (moreBtn) moreBtn.style.display = 'none';
+                            } else if (wrapper && mode === 'completa') {
+                                wrapper.style.maxHeight = '350px';
+                                if (fade) fade.style.display = 'block';
+                                if (moreBtn) {
+                                    moreBtn.style.display = 'block';
+                                    moreBtn.innerHTML = 'Continua a leggere &darr;';
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+
             const clusters = document.querySelectorAll('.feed-cluster');
             clusters.forEach(cluster => {
                 // Find all child elements that make up the content (skip header)
@@ -233,6 +336,7 @@ layout: default
                         contentWrapper.appendChild(fadeOverlay);
 
                         const btn = document.createElement('button');
+                        btn.className = 'read-more-btn';
                         btn.innerHTML = 'Continua a leggere &darr;';
                         btn.style.display = 'block';
                         btn.style.width = '100%';

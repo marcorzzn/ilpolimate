@@ -60,14 +60,15 @@
         }
 
         .nav-brand {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: #d00;
+            font-size: 1.2rem;
+            color: #111;
             text-decoration: none;
-            letter-spacing: -0.5px;
             flex: 1;
-            /* Pushes center items to middle */
+            transition: color 0.2s;
+        }
+
+        .nav-brand:hover {
+            color: #555;
         }
 
         .nav-links {
@@ -119,13 +120,8 @@
                 gap: 15px;
             }
 
-            .nav-brand {
-                display: none;
-            }
-
-            /* nascondi il titolo su mobile per far spazio al menu */
             .site-nav {
-                justify-content: space-around;
+                justify-content: space-between;
             }
         }
 
@@ -184,6 +180,14 @@
             color: #fff;
         }
 
+        body.dark-mode .nav-brand {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .nav-brand:hover {
+            color: #fff;
+        }
+
         body.dark-mode .floating-controls {
             background: rgba(30, 30, 30, 0.8);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -225,6 +229,13 @@
             letter-spacing: -2px;
             margin: 0;
             line-height: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .masthead-title {
+                font-size: 2.8rem;
+                letter-spacing: -1px;
+            }
         }
 
         .masthead-sub {
@@ -351,10 +362,8 @@
 
     <header class="site-header">
         <nav class="site-nav">
-            <a href="{{ site.baseurl }}/" class="nav-brand">IL POLIMATE</a>
+            <a href="{{ site.baseurl }}/" class="nav-brand" title="Home"><i class="fas fa-home"></i></a>
             <div class="nav-links">
-                <a href="{{ site.baseurl }}/" {% if page.url=='/' %}class="active" {% endif %} title="Home"><i
-                        class="fas fa-home"></i></a>
                 <a href="{{ site.baseurl }}/map.html" {% if page.url contains 'map' %}class="active" {% endif
                     %}>Mappa</a>
                 <a href="{{ site.baseurl }}/archivio/" {% if page.url contains 'archivio' %}class="active" {% endif

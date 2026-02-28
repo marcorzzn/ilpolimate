@@ -133,6 +133,37 @@
             cursor: pointer;
             font-size: 1.5rem;
         }
+
+        .timeline-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #333;
+        }
+
+        .timeline-slider {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+
+        .timeline-date {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #fff;
+            min-width: 100px;
+            text-align: right;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 
@@ -157,6 +188,11 @@
         </div>
     </div>
 
+    <div class="timeline-container" id="timelineContainer" style="display: none;">
+        <input type="range" id="timeSlider" class="timeline-slider" min="0" max="0" value="0" step="1">
+        <div class="timeline-date" id="timeDateDisplay">--/--/----</div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Init Map (Dark Mode)
@@ -176,6 +212,10 @@
         }
 
         // Fetch Data
+        let mapData = null;
+        let mapDates = [];
+        let geojsonLayer = null;
+
         fetch('/assets/data/tensions.json')
             .then(res => {
                 if (!res.ok) {
@@ -184,28 +224,31 @@
                 return res.json();
             })
             .then(data => {
-                // Rimuovi eventuale messaggio di caricamento se presente
                 const loadingMsg = document.getElementById('map-loading');
                 if (loadingMsg) loadingMsg.remove();
 
-                L.geoJSON(data, {
-                    pointToLayer: function (feature, latlng) {
-                        return L.circleMarker(latlng, {
-                            radius: 6 + (feature.properties.intensity || 0),
-                            fillColor: getColor(feature.properties.category),
-                            color: "#000",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8,
-                            className: 'pulse-icon'
-                        });
-                    },
-                    onEachFeature: function (feature, layer) {
-                        layer.on('click', function () {
-                            showPanel(feature.properties);
-                        });
-                    }
-                }).addTo(map);
+                if (data.type === "FeatureCollection") {
+                    const today = new Date().toISOString().split('T')[0];
+                    mapData = {};
+                    mapData[today] = data;
+                } else {
+                    mapData = data;
+                }
+
+                mapDates = Object.keys(mapData).sort();
+
+                if (mapDates.length > 0) {
+                    const slider = document.getElementById('timeSlider');
+                    slider.max = mapDates.length - 1;
+                    slider.value = mapDates.length - 1;
+                    document.getElementById('timelineContainer').style.display = 'flex';
+
+                    slider.addEventListener('input', (e) => {
+                        renderDate(mapDates[e.target.value]);
+                    });
+
+                    renderDate(mapDates[mapDates.length - 1]);
+                }
             })
             .catch(err => {
                 console.log("Map Data Error:", err);
@@ -228,6 +271,37 @@
                 `;
                 document.body.appendChild(errorDiv);
             });
+
+        function renderDate(dateStr) {
+            document.getElementById('timeDateDisplay').innerText = dateStr;
+
+            if (geojsonLayer) {
+                map.removeLayer(geojsonLayer);
+            }
+
+            const featureCollection = mapData[dateStr];
+
+            if (featureCollection && featureCollection.features) {
+                geojsonLayer = L.geoJSON(featureCollection, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 6 + (feature.properties.intensity || 0),
+                            fillColor: getColor(feature.properties.category),
+                            color: "#000",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8,
+                            className: 'pulse-icon'
+                        });
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.on('click', function () {
+                            showPanel(feature.properties);
+                        });
+                    }
+                }).addTo(map);
+            }
+        }
 
         function showPanel(props) {
             const panel = document.getElementById('contextPanel');

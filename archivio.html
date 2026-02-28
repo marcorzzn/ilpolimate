@@ -9,10 +9,14 @@ permalink: /archivio/
     <div style="text-align: center; margin-bottom: 50px; border-bottom: 4px double #000; padding-bottom: 30px;">
         <h1
             style="font-family: 'Playfair Display', serif; font-size: 3.5rem; line-height: 1.1; margin: 0; font-weight: 900; letter-spacing: -1px;">
-            Archivio Analisi
+            Archivio Rassegne
         </h1>
-        <p style="font-family: 'Inter', sans-serif; opacity: 0.7; margin-top: 15px;">Tutte le edizioni de Il Polimate,
+        <p style="font-family: 'Inter', sans-serif; opacity: 0.7; margin-top: 15px;">Tutte le rassegne de Il Polimate,
             ordinate cronologicamente.</p>
+        <div style="margin-top: 30px;">
+            <input type="text" id="searchInput" placeholder="Cerca temi, parole chiave, paesi (es. AI, Petrolio...)"
+                style="width: 100%; max-width: 600px; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ccc; border-radius: 30px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.3s; background: transparent; color: inherit;">
+        </div>
     </div>
 
     <div class="archive-container">
@@ -63,7 +67,66 @@ permalink: /archivio/
         </div>
         {% endfor %}
     </div>
+
+    <div id="searchResults" style="display: none; margin-top: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;"
+            class="search-title">Risultati Ricerca</h2>
+        <ul id="resultsList" style="list-style: none; padding: 0; margin: 0;"></ul>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById('searchInput');
+        const archiveContainer = document.querySelector('.archive-container');
+        const searchResults = document.getElementById('searchResults');
+        const resultsList = document.getElementById('resultsList');
+        let postsData = [];
+
+        // Fetch search data
+        fetch('{{ site.baseurl }}/search.json')
+            .then(response => response.json())
+            .then(data => {
+                postsData = data;
+            })
+            .catch(err => console.error("Error loading search data:", err));
+
+        searchInput.addEventListener('input', function (e) {
+            const query = e.target.value.toLowerCase().trim();
+
+            if (query.length < 3) {
+                archiveContainer.style.display = 'block';
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            archiveContainer.style.display = 'none';
+            searchResults.style.display = 'block';
+            resultsList.innerHTML = '';
+
+            const results = postsData.filter(post => {
+                return post.title.toLowerCase().includes(query) ||
+                    post.content.toLowerCase().includes(query);
+            });
+
+            if (results.length === 0) {
+                resultsList.innerHTML = '<li style="color: #666; font-family: \'Inter\', sans-serif; margin-top: 20px;">Nessun risultato trovato per "' + query + '".</li>';
+                return;
+            }
+
+            results.forEach(post => {
+                const li = document.createElement('li');
+                li.style.cssText = 'margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;';
+                li.className = 'search-result-item';
+                li.innerHTML = `
+                <time style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.9rem; color: #888; display: block; margin-bottom: 5px;">${post.date}</time>
+                <a href="${post.url}" style="font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: inherit; text-decoration: none; display: block; transiton: color 0.2s;">${post.title}</a>
+            `;
+                resultsList.appendChild(li);
+            });
+        });
+    });
+</script>
 
 <style>
     body.dark-mode .archive-year h2 {
@@ -82,8 +145,25 @@ permalink: /archivio/
         color: #ccc;
     }
 
-    .archive-container a:hover {
-        color: #d00;
-        text-decoration: underline;
+    .archive-container a:hover,
+    .search-result-item a:hover {
+        color: #d00 !important;
+        text-decoration: underline !important;
+    }
+
+    body.dark-mode #searchInput {
+        border-color: #555;
+    }
+
+    body.dark-mode #searchInput:focus {
+        border-color: #fff;
+    }
+
+    body.dark-mode .search-title {
+        border-bottom-color: #fff !important;
+    }
+
+    body.dark-mode .search-result-item {
+        border-bottom-color: #333 !important;
     }
 </style>
