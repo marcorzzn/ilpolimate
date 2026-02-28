@@ -13,13 +13,13 @@ title: Home
 <div class="stock-ticker" style="border: none; background: transparent; margin: 15px 0;">
     <div class="ticker-container" id="tickerContainer" style="overflow: hidden; white-space: nowrap; display: flex;">
         <div class="ticker-content" id="tickerContent"
-            style="display: inline-flex; animation: ticker 40s linear infinite;">
+            style="display: inline-flex; animation: ticker 25s linear infinite;">
             <span style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #888;">Caricamento
                 mercati...</span>
         </div>
         <!-- Duplicate for seamless loop -->
         <div class="ticker-content" id="tickerContent2"
-            style="display: inline-flex; animation: ticker 40s linear infinite; padding-left: 50px;">
+            style="display: inline-flex; animation: ticker 25s linear infinite; padding-left: 50px;">
         </div>
     </div>
 
@@ -92,28 +92,7 @@ title: Home
 {% assign latest = site.posts.first %}
 {% if latest %}
 <div style="margin-bottom: 60px;">
-    <div style="text-align: center; margin-bottom: 40px;">
-        <div
-            style="font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #000; display: inline-block; margin-bottom: 15px; letter-spacing: 1px;">
-            La rassegna del {{ latest.date | date: "%d" }}
-            {% assign month = latest.date | date: "%B" %}
-            {% case month %}
-            {% when 'January' %}gennaio
-            {% when 'February' %}febbraio
-            {% when 'March' %}marzo
-            {% when 'April' %}aprile
-            {% when 'May' %}maggio
-            {% when 'June' %}giugno
-            {% when 'July' %}luglio
-            {% when 'August' %}agosto
-            {% when 'September' %}settembre
-            {% when 'October' %}ottobre
-            {% when 'November' %}novembre
-            {% when 'December' %}dicembre
-            {% endcase %}
-            {{ latest.date | date: "%Y" }}
-        </div>
-    </div>
+    <!-- Testo spostato in basso -->
 
     <!-- Contenuto completo dell'ultimo post -->
     <article style="font-family: 'Inter', sans-serif; font-size: 1.2rem; line-height: 1.6; color: inherit;">
@@ -338,13 +317,34 @@ title: Home
             const feedSection = document.querySelector('.feed-section');
             if (feedSection) {
                 const triageHTML = `
+                    <div style="text-align: center; margin-bottom: 40px; margin-top: 50px;">
+                        <div style="font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #000; display: inline-block; margin-bottom: 15px; letter-spacing: 1px;">
+                            La rassegna del {{ latest.date | date: "%d" }}
+                            {% assign month = latest.date | date: "%B" %}
+                            {% case month %}
+                            {% when 'January' %}gennaio
+                            {% when 'February' %}febbraio
+                            {% when 'March' %}marzo
+                            {% when 'April' %}aprile
+                            {% when 'May' %}maggio
+                            {% when 'June' %}giugno
+                            {% when 'July' %}luglio
+                            {% when 'August' %}agosto
+                            {% when 'September' %}settembre
+                            {% when 'October' %}ottobre
+                            {% when 'November' %}novembre
+                            {% when 'December' %}dicembre
+                            {% endcase %}
+                            {{ latest.date | date: "%Y" }}
+                        </div>
+                    </div>
                     <div class="triage-controls" style="text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.02); border: 1px solid #eaeaea; padding: 25px; border-radius: 8px;">
                         <div style="margin-bottom: 15px;">
                             <span style="font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; text-transform: uppercase;">
                                 Tempo a disposizione: <span id="timeValDisplay" style="color: #d00;">Tutto</span>
                             </span>
                         </div>
-                        <input type="range" id="triageSlider" min="1" max="60" value="60" style="width: 100%; max-width: 400px; cursor: pointer;">
+                        <input type="range" id="triageSlider" min="0" max="4" value="4" step="1" style="width: 100%; max-width: 400px; cursor: pointer;">
                         
                         <div style="margin-top: 25px;">
                             <button id="ttsPlayBtn" style="font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #111; border-radius: 30px; cursor: pointer; background: #111; color: #fff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s;">
@@ -377,9 +377,13 @@ title: Home
                 slider.max = totalEstimatedMinutes;
                 slider.value = totalEstimatedMinutes;
 
+                const sliderToMinutes = { 0: 1, 1: 5, 2: 10, 3: 15, 4: 999 };
+
                 function updateFeed() {
-                    const targetMinutes = parseInt(slider.value);
-                    if (targetMinutes >= totalEstimatedMinutes) {
+                    const sliderIndex = parseInt(slider.value);
+                    const targetMinutes = sliderToMinutes[sliderIndex];
+
+                    if (targetMinutes === 999) {
                         timeDisplay.innerText = "Tutto (" + totalEstimatedMinutes + " min)";
                     } else {
                         timeDisplay.innerText = targetMinutes + (targetMinutes === 1 ? " Minuto" : " Minuti");

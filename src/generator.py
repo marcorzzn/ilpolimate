@@ -2,6 +2,7 @@ import os
 import datetime
 import json
 import re
+import markdown
 from gtts import gTTS
 
 class ReportGenerator:
@@ -33,9 +34,12 @@ categories: [brief]
             audio_filename = f"{date_str}-audio.mp3"
             audio_path = os.path.join(self.audio_dir, audio_filename)
             try:
+                # Convert Markdown Editorial to HTML
+                mechanism_html = markdown.markdown(mechanism_content)
+                
                 # Clean text for TTS
-                clean_text = re.sub('<[^<]+?>', '', mechanism_content) # Remove HTML
-                clean_text = re.sub(r'[*#_]', '', clean_text) # Remove common Markdown
+                clean_text = re.sub('<[^<]+?>', '', mechanism_html) # Remove HTML
+                clean_text = clean_text.replace('\n', ' ')
                 
                 tts = gTTS(text=clean_text, lang='it', slow=False)
                 tts.save(audio_path)
@@ -59,7 +63,7 @@ categories: [brief]
 <div class="mechanism-section">
     <h2 class="section-title">L'EDITORIALE</h2>
     <div class="editorial-text">
-{mechanism_content}
+{mechanism_html}
     </div>
     {audio_html}
 </div>

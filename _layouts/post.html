@@ -246,7 +246,7 @@ layout: default
                                 Tempo a disposizione: <span id="timeValDisplay" style="color: #d00;">Tutto</span>
                             </span>
                         </div>
-                        <input type="range" id="triageSlider" min="1" max="60" value="60" style="width: 100%; max-width: 400px; cursor: pointer;">
+                        <input type="range" id="triageSlider" min="0" max="4" value="4" step="1" style="width: 100%; max-width: 400px; cursor: pointer;">
                         
                         <div style="margin-top: 25px;">
                             <button id="ttsPlayBtn" style="font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #111; border-radius: 30px; cursor: pointer; background: #111; color: #fff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s;">
@@ -276,12 +276,16 @@ layout: default
                 });
 
                 const totalEstimatedMinutes = Math.max(1, Math.ceil(totalWords / 200));
-                slider.max = totalEstimatedMinutes;
-                slider.value = totalEstimatedMinutes;
+                slider.max = 4;
+                slider.value = 4;
+
+                const sliderToMinutes = { 0: 1, 1: 5, 2: 10, 3: 15, 4: 999 };
 
                 function updateFeed() {
-                    const targetMinutes = parseInt(slider.value);
-                    if (targetMinutes >= totalEstimatedMinutes) {
+                    const sliderIndex = parseInt(slider.value);
+                    const targetMinutes = sliderToMinutes[sliderIndex];
+
+                    if (targetMinutes === 999) {
                         timeDisplay.innerText = "Tutto (" + totalEstimatedMinutes + " min)";
                     } else {
                         timeDisplay.innerText = targetMinutes + (targetMinutes === 1 ? " Minuto" : " Minuti");

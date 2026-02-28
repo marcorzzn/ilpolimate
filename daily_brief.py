@@ -26,18 +26,27 @@ def main():
     
     all_raw_items = []
     
+    
     # 2. Gathering Phase (Tier -1 Sources)
     print(">>> Phase 1: Gathering Intelligence...")
     cluster_results = {}
+    
+    translation_map = {
+        "Science & Frontier Compute": "Scienza e Frontiera Computazionale",
+        "Biotech & Hardware": "Biotecnologie e Hardware",
+        "Geopolitics, Defense & Strategy": "Geopolitica, Difesa e Strategia",
+        "Global Economy & Supply Chain": "Economia Globale e Logistica"
+    }
     
     for key, info in clusters_config.items():
         print(f"   [{key}] Fetching {len(info['urls'])} sources...")
         items = fetcher.get_cluster_data(info['urls'])
         all_raw_items.extend(items)
         
-        # Analyze Cluster immediately (Parallelizable in future, sequential for now to save Rate Limits if any)
+        # Analyze Cluster immediately
         print(f"   [{key}] Analyzing {len(items)} items...")
-        analysis = analyzer.analyze_cluster_groq(info['name'], items)
+        italian_title = translation_map.get(info['name'], info['name'])
+        analysis = analyzer.analyze_cluster_groq(italian_title, items)
         cluster_results[info['name']] = analysis
         time.sleep(2) # Politeness
         
