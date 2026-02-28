@@ -4,10 +4,21 @@ title: Home
 ---
 
 <div class="masthead">
+    <div class="masthead-date-left" id="mastheadDate"></div>
     <div class="masthead-top">FONDATO NEL 2026</div>
     <h1 class="masthead-title">IL POLIMATE</h1>
     <div class="masthead-sub">L'ESSENZIALE STRATEGICO, OGNI MATTINA.</div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const days = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+        const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+        const now = new Date();
+        const df = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+        document.getElementById("mastheadDate").innerText = df;
+    });
+</script>
 
 <!-- Dynamic Ticker (Mercati) -->
 <div class="stock-ticker" style="border: none; background: transparent; margin: 15px 0;">
@@ -551,8 +562,45 @@ title: Home
                 }, 100);
             });
 
+            // Applica il colore di background alla sfumatura in base al tema
             const isDark = document.body.classList.contains('dark-mode');
             document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
+
+            // TTS Logic for Editorial (if present)
+            const edPlayBtn = document.getElementById('edPlayBtn');
+            const edStopBtn = document.getElementById('edStopBtn');
+            const editorialText = document.querySelector('.editorial-text');
+
+            if (edPlayBtn && editorialText) {
+                let synth = window.speechSynthesis;
+
+                edPlayBtn.addEventListener('click', () => {
+                    if (synth.speaking) synth.cancel();
+
+                    let textToRead = editorialText.innerText;
+                    const utterance = new SpeechSynthesisUtterance(textToRead);
+                    utterance.lang = 'it-IT';
+                    utterance.rate = 1.0;
+
+                    utterance.onstart = () => {
+                        edPlayBtn.style.display = 'none';
+                        edStopBtn.style.display = 'inline-block';
+                    };
+
+                    utterance.onend = () => {
+                        edPlayBtn.style.display = 'inline-block';
+                        edStopBtn.style.display = 'none';
+                    };
+
+                    synth.speak(utterance);
+                });
+
+                edStopBtn.addEventListener('click', () => {
+                    synth.cancel();
+                    edPlayBtn.style.display = 'inline-block';
+                    edStopBtn.style.display = 'none';
+                });
+            }
         });
     </script>
     {% else %}

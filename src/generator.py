@@ -18,11 +18,12 @@ class ReportGenerator:
     def save_daily_brief(self, date_obj, clusters_content, mechanism_content):
         """Saves the main unified post."""
         date_str = date_obj.strftime("%Y-%m-%d")
-        display_date = date_obj.strftime("%d %B %Y")
+        mesi = ["", "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
+        display_date = f"{date_obj.day} {mesi[date_obj.month]} {date_obj.year}"
         
         # Frontmatter
         md = f"""---
-title: "La rassegna del giorno - {display_date}"
+title: "La rassegna del giorno {display_date}"
 date: {date_str}
 layout: post
 categories: [brief]
@@ -31,28 +32,22 @@ categories: [brief]
         # 1. Meccanismi Section (Top)
         if mechanism_content:
             # Generate Audio
-            audio_filename = f"{date_str}-audio.mp3"
-            audio_path = os.path.join(self.audio_dir, audio_filename)
             try:
                 # Convert Markdown Editorial to HTML
                 mechanism_html = markdown.markdown(mechanism_content)
                 
-                # Clean text for TTS
-                clean_text = re.sub('<[^<]+?>', '', mechanism_html) # Remove HTML
-                clean_text = clean_text.replace('\n', ' ')
-                
-                tts = gTTS(text=clean_text, lang='it', slow=False)
-                tts.save(audio_path)
-                
                 audio_html = f'''
-                <div style="margin-top: -10px; margin-bottom: 30px; text-align: center;">
-                    <audio controls style="height: 35px; width: 100%; max-width: 300px; opacity: 0.85;">
-                        <source src="/assets/audio/{audio_filename}" type="audio/mpeg">
-                    </audio>
+                <div style="margin-top: 15px; margin-bottom: 25px; text-align: center; width: 100%;">
+                    <button id="edPlayBtn" style="font-family: 'Inter', sans-serif; font-weight: 600; padding: 10px 20px; border: 1px solid #111; border-radius: 30px; cursor: pointer; background: #111; color: #fff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s;">
+                        <i class="fas fa-play" style="margin-right: 8px;"></i> Ascolta l'Editoriale
+                    </button>
+                    <button id="edStopBtn" style="display: none; font-family: 'Inter', sans-serif; font-weight: 600; padding: 10px 20px; border: 1px solid #d00; border-radius: 30px; cursor: pointer; background: #fff; color: #d00; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s; margin-left:10px;">
+                        <i class="fas fa-stop"></i> Ferma
+                    </button>
                 </div>
                 '''
             except Exception as e:
-                print(f"Audio Generation Error: {e}")
+                print(f"HTML Generation Error: {e}")
                 audio_html = ""
 
             md += f"""

@@ -2,7 +2,8 @@ name: Daily Polymath Brief (Free Tier)
 
 on:
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 7 * * *'    # Rassegna giornaliera alle 07:00
+    - cron: '0 */6 * * *'  # Mappa aggiornata ogni 6 ore (00, 06, 12, 18)
   workflow_dispatch:
 
 permissions:
@@ -24,11 +25,18 @@ jobs:
       - name: Install Libraries
         run: pip install -r requirements.txt
 
-      - name: Run Generator Script
+      - name: Run Generator Script (Daily Brief)
+        if: github.event.schedule == '0 7 * * *' || github.event_name == 'workflow_dispatch'
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
         run: python daily_brief.py
+
+      - name: Run Map Tensions Updater (Every 6h)
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        run: python update_map.py
 
       - name: Commit and Push Report
         run: |
@@ -37,5 +45,5 @@ jobs:
           git add _posts/
           git add assets/data/
           git add assets/audio/
-          git commit -m "New Brief Generated on $(date)" || echo "Nessun cambiamento"
+          git commit -m "Automated Content Update: Brief & Map $(date)" || echo "Nessun cambiamento"
           git push

@@ -1,0 +1,211 @@
+---
+layout: default
+title: Ultima Ora
+permalink: /ultima-ora.html
+---
+
+<style>
+    /* Specific Styles for Ultima Ora Airport Board */
+    .airport-board-wrapper {
+        background: #000;
+        color: #ffd700;
+        /* Classic amber/yellow for flip boards, but let's stick to elegant white/red */
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        min-height: 50vh;
+    }
+
+    body.dark-mode .airport-board-wrapper {
+        background: #0f0f0f;
+    }
+
+    .airport-board-header {
+        text-align: center;
+        border-bottom: 2px solid #333;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .airport-board-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3rem;
+        font-weight: 900;
+        color: #fff;
+        margin: 0;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .airport-board-header p {
+        font-family: 'Inter', sans-serif;
+        color: #d00;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        margin-top: 10px;
+        text-transform: uppercase;
+    }
+
+    /* 5 Column Grid */
+    .news-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+    }
+
+    @media (max-width: 1200px) {
+        .news-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .news-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .news-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .news-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .news-card {
+        background: #111;
+        border: 1px solid #222;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: background 0.2s, border-color 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .news-card:hover {
+        background: #1a1a1a;
+        border-color: #d00;
+    }
+
+    .news-time {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        color: #d00;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .news-source {
+        color: #666;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+    }
+
+    .news-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.4;
+        margin-bottom: 10px;
+        flex-grow: 1;
+    }
+
+    .news-desc {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        color: #888;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+<div class="airport-board-wrapper">
+    <div class="airport-board-header">
+        <h1>Ultima Ora</h1>
+        <p>🔴 Live Feed — Aggiornato ogni ora <span id="lastUpdateSpan"></span></p>
+    </div>
+
+    <div class="news-grid" id="newsGrid">
+        <div
+            style="grid-column: 1 / -1; text-align: center; color: #666; font-family: 'Inter', sans-serif; padding: 40px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 15px;"></i><br>
+            Sincronizzazione coi terminali d'agenzia...
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const grid = document.getElementById("newsGrid");
+
+        fetch('{{ site.baseurl }}/assets/data/latest_news.json')
+            .then(res => res.json())
+            .then(data => {
+                grid.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; color:#888;">Nessun lancio disponibile al momento.</div>';
+                    return;
+                }
+
+                // Assuming data has timestamp meta if we wrap it, otherwise we just map
+                // Let's expect an array of item objects
+
+                // Generate relative times / parse
+                data.forEach(item => {
+                    const wrap = document.createElement('a');
+                    wrap.href = item.link;
+                    wrap.target = "_blank";
+                    wrap.className = "news-card";
+
+                    // Cleanup source text
+                    let sourceName = item.source || "AGENZIA";
+                    if (sourceName.length > 20) sourceName = sourceName.substring(0, 17) + "...";
+
+                    // Extract Date
+                    let timeStr = "ORA";
+                    if (item.published) {
+                        try {
+                            const d = new Date(item.published);
+                            timeStr = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                        } catch (e) { }
+                    }
+
+                    // Description cleanup
+                    let desc = item.content || "";
+                    if (desc.startsWith("[FONTE ORIGINALE:")) {
+                        desc = desc.substring(desc.indexOf("]") + 1).replace(/^ - /, "").trim();
+                    }
+
+                    wrap.innerHTML = `
+                        <div class="news-time">
+                            <span>${timeStr}</span>
+                            <span class="news-source">${sourceName}</span>
+                        </div>
+                        <div class="news-title">${item.title}</div>
+                        <div class="news-desc">${desc}</div>
+                    `;
+                    grid.appendChild(wrap);
+                });
+
+            }).catch(e => {
+                console.error("Ultima Ora error:", e);
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; color:#d00;">[Errore di connettività feed satellitare] Consultare l\'archivio centrale.</div>';
+            });
+    });
+</script>

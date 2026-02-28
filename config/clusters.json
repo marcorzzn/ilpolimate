@@ -1,14 +1,12 @@
 {
-    "01_SCIENCE_ORIGIN": {
-        "name": "SCIENCE & FRONTIER COMPUTE",
-        "description": "Primary scientific journals and foundational compute research.",
+    "01_AI_FRONTIER": {
+        "name": "Intelligenza Artificiale e Frontiera Computazionale",
+        "description": "Ricerca AI, startup, modelli di base, calcolo quantistico.",
         "urls": [
             "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
             "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
-            "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=40",
-            "https://www.nature.com/nature.rss",
-            "https://www.science.org/rss/news_current.xml",
-            "https://www.technologyreview.com/feed/",
+            "http://export.arxiv.org/api/query?search_query=cat:cs.RO&sortBy=submittedDate&sortOrder=descending&max_results=30",
+            "http://export.arxiv.org/api/query?search_query=cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=20",
             "https://deepmind.google/blog/rss.xml",
             "https://research.google/blog/rss/",
             "https://huggingface.co/blog/feed.xml",
@@ -16,9 +14,21 @@
             "https://ai.meta.com/blog/rss.xml"
         ]
     },
-    "02_BIO_HARDTECH": {
-        "name": "BIOTECH & HARDWARE",
-        "description": "Synthetic biology, hardware engineering, and materials.",
+    "02_STEM_SCIENZA_PURA": {
+        "name": "Matematica, Fisica e Scienze Pure",
+        "description": "Matematica avanzata, fisica teorica, scoperte scientifiche di base.",
+        "urls": [
+            "http://export.arxiv.org/api/query?search_query=cat:math.HO+OR+cat:math.AG+OR+cat:math.PR&sortBy=submittedDate&sortOrder=descending&max_results=30",
+            "http://export.arxiv.org/api/query?search_query=cat:hep-th+OR+cat:gr-qc+OR+cat:astro-ph&sortBy=submittedDate&sortOrder=descending&max_results=30",
+            "https://www.nature.com/nature.rss",
+            "https://www.science.org/rss/news_current.xml",
+            "https://www.quantamagazine.org/feed/",
+            "https://news.mit.edu/rss/research"
+        ]
+    },
+    "03_BIO_INGEGNERIA": {
+        "name": "Ingegneria, Hardware e Biotecnologie",
+        "description": "Ingegneria dei materiali, semiconduttori, robotica avanzata, biologia sintetica.",
         "urls": [
             "https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology",
             "https://www.nature.com/nbt.rss",
@@ -29,9 +39,9 @@
             "https://spectrum.ieee.org/feeds/feed.rss"
         ]
     },
-    "03_GEOPOLITICS_DEFENSE": {
-        "name": "GEOPOLITICS, DEFENSE & STRATEGY",
-        "description": "Strategic intelligence, defense analysis, and global conflict monitoring.",
+    "04_GEOPOLITICS_DEFENSE": {
+        "name": "Geopolitica e Difesa Integrale",
+        "description": "Conflitti, strategia nucleare, intelligence, politica estera.",
         "urls": [
             "https://www.understandingwar.org/feeds.xml",
             "https://warontherocks.com/feed/",
@@ -47,9 +57,9 @@
             "https://acleddata.com/feed/"
         ]
     },
-    "04_MACRO_ECONOMICS": {
-        "name": "MACROECONOMICS & CAPITAL FLOWS",
-        "description": "Central banks, global financial institutions, and economic research.",
+    "05_MACRO_ECONOMICS": {
+        "name": "Macroeconomia e Flussi Globali",
+        "description": "Banche centrali, geo-economia, materie prime.",
         "urls": [
             "https://www.bis.org/doclist/research.rss",
             "https://www.federalreserve.gov/feeds/feds_rss.xml",
@@ -60,9 +70,9 @@
             "https://www.worldbank.org/en/rss/research"
         ]
     },
-    "05_ENERGY_SPACE": {
-        "name": "ENERGY & SPACE ECONOMY",
-        "description": "Global energy markets, nuclear energy, and space exploration.",
+    "06_ENERGY_SPACE": {
+        "name": "Infrastrutture, Energia e Spazio",
+        "description": "Mercati energetici, nucleare di nuova generazione, esplorazione spaziale.",
         "urls": [
             "https://iea.org/rss/news",
             "https://www.iaea.org/newscenter/pressreleases/feed",

@@ -189,11 +189,12 @@ class ContentAnalyzer:
             intensity: 1-10
           }
         
-        CRITICAL INSTRUCTIONS: 
-        1. Extract AS MANY EVENTS AS POSSIBLE. BE EXTREMELY GRANULAR. 
-        2. Do not summarize into 1-2 macro events. If there are 20 different country names, there should ideally be 20 different coordinates.
-        3. Mention ANY micro-conflict, protest, diplomatic tension, economic sanction, corporate shift, or border dispute you can find. 
-        4. IF NO EXACT LOCATION, GUESS THE NEAREST CAPITAL.
+        EXTREME CRITICAL INSTRUCTIONS: 
+        1. YOU MUST EXTRACT A MINIMUM OF 25 EVENTS from the provided text. BE HYPER LOCAL AND GRANULAR.
+        2. DO NOT GROUP EVENTS. A protest in Paris and a protest in Lyon are TWO separate events. An attack in Kyiv and one in Kharkiv are TWO events.
+        3. Search for EVERY military incident, EVERY protest, EVERY hack, EVERY diplomatic friction, EVERY infrastructure issue.
+        4. YOU MUST INVENT/ESTIMATE the lat/lon if not explicitly written! (e.g. if an event is "France signs pact", use Paris lat/lon).
+        5. DO NOT leave the features array empty! READ CLOSELY and exhaust every single entity mentioned.
         """
         
         try:

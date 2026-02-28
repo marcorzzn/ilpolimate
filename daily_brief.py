@@ -31,13 +31,6 @@ def main():
     print(">>> Phase 1: Gathering Intelligence...")
     cluster_results = {}
     
-    translation_map = {
-        "Science & Frontier Compute": "Scienza e Frontiera Computazionale",
-        "Biotech & Hardware": "Biotecnologie e Hardware",
-        "Geopolitics, Defense & Strategy": "Geopolitica, Difesa e Strategia",
-        "Global Economy & Supply Chain": "Economia Globale e Logistica"
-    }
-    
     for key, info in clusters_config.items():
         print(f"   [{key}] Fetching {len(info['urls'])} sources...")
         items = fetcher.get_cluster_data(info['urls'])
@@ -45,9 +38,9 @@ def main():
         
         # Analyze Cluster immediately
         print(f"   [{key}] Analyzing {len(items)} items...")
-        italian_title = translation_map.get(info['name'], info['name'])
+        italian_title = info['name']
         analysis = analyzer.analyze_cluster_groq(italian_title, items)
-        cluster_results[info['name']] = analysis
+        cluster_results[italian_title] = analysis
         time.sleep(2) # Politeness
         
     # 3. Holistic Phase (Meccanismi & Map)
