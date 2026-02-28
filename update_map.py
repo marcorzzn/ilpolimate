@@ -65,7 +65,7 @@ def main():
     # Dump the raw feed for the Ultima Ora UI
     ultima_ora_path = os.path.join(generator.site_data_dir, "latest_news.json")
     with open(ultima_ora_path, "w", encoding="utf-8") as f:
-        json.dump(all_raw_items, f, ensure_ascii=False)
+        json.dump(all_raw_items, f, ensure_ascii=False, default=str)
     
     # Force Citation Check on Features
     if "features" in map_data:
