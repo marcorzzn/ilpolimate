@@ -23,7 +23,7 @@ class ReportGenerator:
         
         # Frontmatter
         md = f"""---
-title: "La rassegna del giorno {display_date}"
+title: "La rassegna del {display_date}"
 date: {date_str}
 layout: post
 categories: [brief]

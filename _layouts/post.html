@@ -458,6 +458,42 @@ layout: default
             const isDark = document.body.classList.contains('dark-mode');
             document.documentElement.style.setProperty('--bg-color', isDark ? '#1a1a1a' : '#ffffff');
         }
+
+        // TTS Logic for Editorial (if present)
+        const edPlayBtn = document.getElementById('edPlayBtn');
+        const edStopBtn = document.getElementById('edStopBtn');
+        const editorialText = document.querySelector('.editorial-text');
+
+        if (edPlayBtn && editorialText) {
+            let synth = window.speechSynthesis;
+
+            edPlayBtn.addEventListener('click', () => {
+                if (synth.speaking) synth.cancel();
+
+                let textToRead = editorialText.innerText;
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = 'it-IT';
+                utterance.rate = 1.0;
+
+                utterance.onstart = () => {
+                    edPlayBtn.style.display = 'none';
+                    edStopBtn.style.display = 'inline-block';
+                };
+
+                utterance.onend = () => {
+                    edPlayBtn.style.display = 'inline-block';
+                    edStopBtn.style.display = 'none';
+                };
+
+                synth.speak(utterance);
+            });
+
+            edStopBtn.addEventListener('click', () => {
+                synth.cancel();
+                edPlayBtn.style.display = 'inline-block';
+                edStopBtn.style.display = 'none';
+            });
+        }
     </script>
 
     <div style="height: 100px;"></div>

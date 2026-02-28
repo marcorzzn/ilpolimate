@@ -372,6 +372,64 @@
             border-bottom: 1px solid #fff;
         }
 
+        /* GESTIONE RESPONSIVE MENU */
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-bottom: 1px solid #eaeaea;
+            z-index: 1000;
+            flex-direction: column;
+            padding: 10px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .mobile-menu a {
+            padding: 15px 40px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #111;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        body.dark-mode .hamburger-btn {
+            color: #fff;
+        }
+
+        body.dark-mode .mobile-menu {
+            background: #111;
+            border-bottom-color: #333;
+        }
+
+        body.dark-mode .mobile-menu a {
+            color: #fff;
+            border-bottom-color: #222;
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            .nav-links {
+                display: none !important;
+            }
+        }
+
         /* FOOTER MODESTO */
         .site-footer {
             text-align: center;
@@ -406,43 +464,43 @@
 
 <body>
 
-    <header class="site-header">
+    <header class="site-header" style="position: relative;">
         <nav class="site-nav">
             <div style="display: flex; align-items: center; gap: 15px;">
+                <!-- 1. Hamburger Menu -->
+                <button class="hamburger-btn" id="hamburgerBtn" title="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- 2. Brand Icon (replaces home icon text) -->
                 <a href="{{ site.baseurl }}/" class="nav-brand" title="Home"
-                    style="display: flex; align-items: center; gap: 10px;">
+                    style="display: flex; align-items: center;">
                     <img src="{{ site.baseurl }}/assets/icons/logo-circle.png" alt="Il Polimate Logo"
-                        style="height: 24px; width: 24px; border-radius: 50%;">
-                    <span
-                        style="font-family: 'Playfair Display', serif; font-weight: 900; letter-spacing: 1px; font-size: 1.1rem;">Il
-                        Polimate</span>
+                        style="height: 32px; width: 32px; border-radius: 50%;">
                 </a>
 
-                <!-- Search Bar spostata vicino alla Home -->
+                <!-- 3. Search Bar -->
                 <form action="{{ site.baseurl }}/archivio/" method="get"
-                    style="display:flex; align-items:center; background:#f0f0f0; border-radius:20px; padding:2px 10px; margin-left: 10px;">
+                    style="display:flex; align-items:center; background:#f0f0f0; border-radius:20px; padding:2px 10px; margin-left: 5px;">
                     <i class="fas fa-search" style="color:#666; font-size:0.8rem;"></i>
                     <input type="text" name="q" placeholder="Cerca..."
                         style="border:none; background:transparent; outline:none; padding:5px; font-family:'Inter', sans-serif; font-size:0.8rem; width:100px;" />
                 </form>
             </div>
 
+            <!-- Horizontal Links (Visible on Desktop/Landscape) -->
             <div class="nav-links" style="align-items: center; justify-content: flex-end;">
-                <!-- 1. Ultima Ora -->
                 <a href="{{ site.baseurl }}/ultima-ora.html"
                     style="color:#d00; {% if page.url contains 'ultima-ora' %}border-bottom: 2px solid #d00;{% endif %}">Ultima
                     Ora</a>
 
-                <!-- 2. La Rassegna -->
                 <a href="{{ site.baseurl }}{% if site.posts.first %}{{ site.posts.first.url }}{% else %}/archivio/{% endif %}"
                     style="background:#000; color:#fff; padding:5px 10px; border-radius:4px; font-size:0.8rem; white-space:nowrap; text-decoration:none;">La
                     Rassegna</a>
 
-                <!-- 3. Mappa -->
                 <a href="{{ site.baseurl }}/map.html" {% if page.url contains 'map' %}class="active" {% endif
                     %}>Mappa</a>
 
-                <!-- 4. Archivio -->
                 <a href="{{ site.baseurl }}/archivio/" {% if page.url contains 'archivio' %}class="active" {% endif
                     %}>Archivio</a>
             </div>
@@ -452,6 +510,16 @@
                 <i class="fas fa-moon"></i>
             </button>
         </nav>
+
+        <!-- Dropdown Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="{{ site.baseurl }}/ultima-ora.html" style="color:#d00;">Ultima Ora</a>
+            <a
+                href="{{ site.baseurl }}{% if site.posts.first %}{{ site.posts.first.url }}{% else %}/archivio/{% endif %}">La
+                Rassegna</a>
+            <a href="{{ site.baseurl }}/map.html">Mappa</a>
+            <a href="{{ site.baseurl }}/archivio/">Archivio</a>
+        </div>
     </header>
 
     <div class="floating-controls" style="display: none;">
@@ -476,6 +544,19 @@
         }
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
+        }
+
+        // Hamburger Menu Logic
+        const btn = document.getElementById('hamburgerBtn');
+        const menu = document.getElementById('mobileMenu');
+        if (btn && menu) {
+            btn.addEventListener('click', () => {
+                if (menu.style.display === 'flex') {
+                    menu.style.display = 'none';
+                } else {
+                    menu.style.display = 'flex';
+                }
+            });
         }
 
         // PWA Service Worker Registration

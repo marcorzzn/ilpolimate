@@ -46,7 +46,7 @@ class ContentAnalyzer:
         </div>
         
         CRITICAL RULES:
-        - Strict Italian Language.
+        - MANDA IN OUTPUT SOLO LINGUA ITALIANA. TUTTO IL TESTO, I TITOLI E LE DESCRIZIONI DEVONO ESSERE IN ITALIANO PERFETTO.
         - Output ONLY pure HTML. Do NOT include <a </div> typo. Ensure all tags are correctly closed.
         """
 
