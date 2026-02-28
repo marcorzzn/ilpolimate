@@ -125,23 +125,26 @@ class ContentAnalyzer:
             print(f"Mechanism Editor Error ({model_name}): {e}")
             return None
 
-    def translate_ultima_ora_titles(self, items):
-        """Translates the titles of the breaking news items to Italian."""
+    def translate_ultima_ora(self, items):
+        """Translates both titles and contents of the breaking news items to Italian."""
         client = self.zai_client if self.zai_client else self.groq_client
         model_name = "glm-4-flash" if self.zai_client else "llama-3.1-8b-instant"
         
         if not client or not items: return items
         
         # Batch translation to avoid token limits per request
-        batch_size = 40
+        batch_size = 20  # Reduced batch size since we're translating more content
         for i in range(0, len(items), batch_size):
             batch = items[i:i+batch_size]
-            titles_dict = {str(idx): item['title'] for idx, item in enumerate(batch)}
+            payload_dict = {
+                str(idx): {"title": item.get('title', ''), "content": item.get('content', '')[:1000]} # Cap content length
+                for idx, item in enumerate(batch)
+            }
             
             prompt = """
-            Traduci tutti i seguenti titoli di notizie dall'inglese (o altra lingua) all'Italiano perfetto, giornalistico e conciso.
-            Restituisci ESATTAMENTE E SOLO un dizionario JSON valido dove le chiavi sono gli stessi numeri e i valori sono i titoli tradotti in italiano.
-            Non aggiungere commenti o backtick code blocks come ```json, solo l'oggetto JSON puro.
+            Traduci tutti i campi 'title' e 'content' dei seguenti oggetti JSON dall'inglese (o altra lingua) all'Italiano perfetto, giornalistico e conciso.
+            Restituisci ESATTAMENTE E SOLO lo stesso dizionario JSON, mantenendo le stesse chiavi numeriche, e dove i valori 'title' e 'content' sono tradotti in italiano in modo eccellente.
+            Non aggiungere commenti o backtick code blocks come ```json, solo l'oggetto JSON puro. Assicurati che le virgolette interne siano encodate correttamente (escaped) per non rompere il JSON.
             """
             
             try:
@@ -149,21 +152,24 @@ class ContentAnalyzer:
                     model=model_name,
                     messages=[
                         {"role": "system", "content": prompt},
-                        {"role": "user", "content": json.dumps(titles_dict)}
+                        {"role": "user", "content": json.dumps(payload_dict)}
                     ],
                     temperature=0.1
                 )
                 raw_text = response.choices[0].message.content.strip()
                 if raw_text.startswith("```json"):
-                    raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+                    raw_text = raw_text.replace("```json", "", 1).replace("```", "").strip()
                 elif raw_text.startswith("```"):
-                    raw_text = raw_text.replace("```", "").strip()
+                    raw_text = raw_text.replace("```", "", 1).replace("```", "").strip()
                     
                 translated_dict = json.loads(raw_text)
-                for key, translated_title in translated_dict.items():
+                for key, translated_obj in translated_dict.items():
                     idx = int(key)
-                    if 0 <= idx < len(batch):
-                        batch[idx]['title'] = translated_title
+                    if 0 <= idx < len(batch) and isinstance(translated_obj, dict):
+                        if 'title' in translated_obj:
+                            batch[idx]['title'] = translated_obj['title']
+                        if 'content' in translated_obj:
+                            batch[idx]['content'] = translated_obj['content']
             except Exception as e:
                 print(f"Translation Error ({model_name}): {e}")
                 

@@ -59,14 +59,24 @@ def main():
     # Modify analyzer specifically for 6H Map with Agency sourcing
     map_data = analyzer.analyze_tensions_map(full_context_str)
     
-    # Translate Ultima Ora titles
-    print(">>> Translating Ultima Ora Headlines to Italian...")
-    all_raw_items = analyzer.translate_ultima_ora_titles(all_raw_items)
+    
+    # Strictly filter sources for Ultima Ora to only exactly the requested 5.
+    allowed_sources = ["ansa", "agi", "afp", "associated press", "ap", "reuters"]
+    filtered_items = []
+    for item in all_raw_items:
+        src_lower = item['source'].lower()
+        # Ensure it belongs to one of the 5 agencies
+        if any(allowed in src_lower for allowed in allowed_sources):
+            filtered_items.append(item)
+            
+    # Translate Ultima Ora titles AND contents
+    print(f">>> Translating {len(filtered_items)} Ultima Ora items to Italian...")
+    filtered_items = analyzer.translate_ultima_ora(filtered_items)
     
     # Dump the raw feed for the Ultima Ora UI
     ultima_ora_path = os.path.join(generator.site_data_dir, "latest_news.json")
     with open(ultima_ora_path, "w", encoding="utf-8") as f:
-        json.dump(all_raw_items, f, ensure_ascii=False, default=str)
+        json.dump(filtered_items, f, ensure_ascii=False, default=str)
     
     # Force Citation Check on Features
     if "features" in map_data:
