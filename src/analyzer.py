@@ -238,7 +238,7 @@ class ContentAnalyzer:
         1. YOU MUST EXTRACT A MINIMUM OF 25 EVENTS from the provided text. BE HYPER LOCAL AND GRANULAR.
         2. DO NOT GROUP EVENTS. A protest in Paris and a protest in Lyon are TWO separate events. An attack in Kyiv and one in Kharkiv are TWO events.
         3. Search for EVERY military incident, EVERY protest, EVERY hack, EVERY diplomatic friction, EVERY infrastructure issue.
-        4. YOU MUST INVENT/ESTIMATE the lat/lon if not explicitly written! (e.g. if an event is "France signs pact", use Paris lat/lon).
+        4. YOU MUST INVENT/ESTIMATE the EXACT LOCAL lat/lon. YOU ARE ABSOLUTAMENTE VIETATO (FORBIDDEN) FROM REUSING THE SAME COORDINATES FOR DIFFERENT EVENTS unless they literally happen in the exact same building. Find the real, distinct [longitude, latitude] of the specific city or region mentioned! Use 4 decimal precision. Format MUST be [longitude, latitude].
         5. DO NOT leave the features array empty! READ CLOSELY and exhaust every single entity mentioned.
         """
         
