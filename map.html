@@ -232,7 +232,7 @@ permalink: /map.html
         let mapDates = [];
         let geojsonLayer = null;
 
-        fetch('{{ site.baseurl }}/assets/data/tensions.json')
+        fetch('{{ site.baseurl }}/assets/data/tensions.json?t=' + new Date().getTime())
             .then(res => {
                 if (!res.ok) {
                     throw new Error("HTTP " + res.status);

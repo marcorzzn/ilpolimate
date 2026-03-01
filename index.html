@@ -63,7 +63,7 @@ title: Home
     </style>
 
     <script>
-        fetch('{{ site.baseurl }}/assets/data/headlines.json')
+        fetch('{{ site.baseurl }}/assets/data/headlines.json?t=' + new Date().getTime())
             .then(r => r.json())
             .then(data => {
                 const container1 = document.getElementById('tickerContent');

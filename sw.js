@@ -27,31 +27,19 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                if (response) {
-                    return response;
+        fetch(event.request).then(response => {
+            // If the fetch is successful, cache it and return
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+                if (event.request.method === 'GET' && event.request.url.startsWith(self.location.origin)) {
+                    cache.put(event.request, responseClone);
                 }
-
-                return fetch(event.request).then(
-                    function (response) {
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        var responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then(function (cache) {
-                                if (event.request.url.startsWith(self.location.origin)) {
-                                    cache.put(event.request, responseToCache);
-                                }
-                            });
-
-                        return response;
-                    }
-                );
-            })
+            });
+            return response;
+        }).catch(() => {
+            // If network fails, try to return from cache
+            return caches.match(event.request);
+        })
     );
 });
 
