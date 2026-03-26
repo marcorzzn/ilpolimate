@@ -17,14 +17,15 @@ class ReportGenerator:
         mesi = ["", "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
         display_date = f"{date_obj.day} {mesi[date_obj.month]} {date_obj.year}"
         
+        md_parts = []
         # Frontmatter
-        md = f"""---
+        md_parts.append(f"""---
 title: "La rassegna del {display_date}"
 date: {date_str}
 layout: post
 categories: [brief]
 ---
-"""
+""")
         # 1. Meccanismi Section (Top)
         if mechanism_content:
             try:
@@ -34,25 +35,23 @@ categories: [brief]
                 print(f"HTML Generation Error: {e}")
                 mechanism_html = mechanism_content
 
-            md += f"""
+            md_parts.append(f"""
 <div class="mechanism-section">
     <h2 class="section-title">L'EDITORIALE</h2>
     <div class="editorial-text">
 {mechanism_html}
     </div>
 </div>
-"""
+""")
 
         # 2. Clusters (The Feed)
-        md_parts = [md, '\n<div class="feed-section">\n<div class="feed-grid">\n']
+        md_parts.append('\n<div class="feed-section">\n<div class="feed-grid">\n')
         for cluster_name, content in clusters_content.items():
             if content:
                 # Wrap each cluster in a card
                 md_parts.append(f"\n<div class=\"feed-cluster\">\n<div class=\"cluster-header\">{cluster_name}</div>\n\n{content}\n</div>\n")
         md_parts.append('\n</div>\n</div>\n')
 
-        md = "".join(md_parts)
-        md = "".join(md_parts)
         final_md = "".join(md_parts)
 
         filename = os.path.join(self.output_dir, f"{date_str}-brief.md")

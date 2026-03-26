@@ -21,8 +21,7 @@ class TestReportGenerator(unittest.TestCase):
         with patch('os.path.exists', return_value=True):
             self.generator = ReportGenerator(
                 output_dir=self.output_dir,
-                site_data_dir=self.site_data_dir,
-                audio_dir=self.audio_dir
+                site_data_dir=self.site_data_dir
             )
 
     @patch('builtins.open', new_callable=mock_open)
