@@ -89,8 +89,13 @@ title: Home
                     if (isPositive) color = "#00aa00";
                     if (isNegative) color = "#dd0000";
 
-                    const html = `<a href="${symbol ? `https://www.google.com/finance/quote/${symbol}?hl=it` : `https://www.google.com/finance/?hl=it`}" target="_blank" class="ticker-link" style="color: ${color};">${text}</a>`;
-                    container1.insertAdjacentHTML('beforeend', html);
+                    const a = document.createElement('a');
+                    a.href = symbol ? `https://www.google.com/finance/quote/${symbol}?hl=it` : `https://www.google.com/finance/?hl=it`;
+                    a.target = "_blank";
+                    a.className = "ticker-link";
+                    a.style.color = color;
+                    a.textContent = text;
+                    container1.appendChild(a);
                 });
 
                 // Clone contents for seamless scrolling loop
