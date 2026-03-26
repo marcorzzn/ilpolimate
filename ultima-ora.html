@@ -192,14 +192,34 @@ permalink: /ultima-ora.html
                         desc = desc.substring(desc.indexOf("]") + 1).replace(/^ - /, "").trim();
                     }
 
-                    wrap.innerHTML = `
-                        <div class="news-time">
-                            <span>${timeStr}</span>
-                            <span class="news-source">${sourceName}</span>
-                        </div>
-                        <div class="news-title">${item.title}</div>
-                        <div class="news-desc">${desc}</div>
-                    `;
+                    // Securely construct DOM to prevent XSS
+                    const newsTime = document.createElement('div');
+                    newsTime.className = 'news-time';
+
+                    const spanTime = document.createElement('span');
+                    spanTime.textContent = timeStr;
+
+                    const spanSource = document.createElement('span');
+                    spanSource.className = 'news-source';
+                    spanSource.textContent = sourceName;
+
+                    newsTime.appendChild(spanTime);
+                    newsTime.appendChild(spanSource);
+
+                    const newsTitle = document.createElement('div');
+                    newsTitle.className = 'news-title';
+                    // Strip any stray HTML tags from title and use textContent
+                    const titleText = item.title || "";
+                    newsTitle.textContent = titleText.replace(/<[^>]*>/g, '');
+
+                    const newsDesc = document.createElement('div');
+                    newsDesc.className = 'news-desc';
+                    // Strip HTML tags and entities from description for clean text display
+                    newsDesc.textContent = desc.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+                    wrap.appendChild(newsTime);
+                    wrap.appendChild(newsTitle);
+                    wrap.appendChild(newsDesc);
                     grid.appendChild(wrap);
                 });
 
