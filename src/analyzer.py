@@ -19,7 +19,7 @@ class ContentAnalyzer:
         if not items: return None
         if not self.groq_client: return None
         
-        # Prepare context (Optimized string concatenation)
+        # Prepare context
         context_parts = []
         for item in items:
             context_parts.append(f"SOURCE: {item['source']}\nTITLE: {item['title']}\nLINK: {item['link']}\nCONTENT: {item['content']}\n\n---\n\n")
