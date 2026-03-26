@@ -1,9 +1,7 @@
 import os
 import datetime
 import json
-import re
 import markdown
-from gtts import gTTS
 
 class ReportGenerator:
     def __init__(self, output_dir="_posts", site_data_dir="assets/data", audio_dir="assets/audio"):
