@@ -277,8 +277,19 @@ class ContentAnalyzer:
             if raw_text.endswith("```"):
                 raw_text = raw_text[:raw_text.rfind("```")]
             raw_text = raw_text.strip()
-                
-            data = json.loads(raw_text)
+
+            # Additional cleanup for Groq artifacts
+            if "{" not in raw_text:
+                return {"type": "FeatureCollection", "features": []}
+
+            # It's better to just try parsing first before aggressive truncation,
+            # as it can destroy the valid JSON.
+            try:
+                data = json.loads(raw_text)
+            except json.JSONDecodeError:
+                # Fallback to truncation if direct parse fails
+                raw_text = raw_text[raw_text.find("{"):raw_text.rfind("}")+1]
+                data = json.loads(raw_text)
 
             # Geocode the locations
             from geopy.geocoders import Nominatim

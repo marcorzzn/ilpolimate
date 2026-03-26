@@ -63,6 +63,8 @@ def main():
     
     
     import re
+    import pytz
+
     # Strictly filter sources for Ultima Ora to exactly the requested 7 agencies.
     allowed_sources = ["ansa", "agi", "adn kronos", "adnkronos", "lapresse", "associated press", "ap", "reuters", "afp", "google news"]
     allowed_pattern = re.compile('|'.join(re.escape(a) for a in allowed_sources), re.IGNORECASE)
@@ -72,12 +74,20 @@ def main():
     for item in all_raw_items:
         link = item.get('link', '').lower()
 
-        real_source = item['source']
+        # Original source from the RSS feed
+        real_source = item.get('source', '')
+
+        # Re-assign real source if it came from a Google News search
         if "lapresse.it" in link: real_source = "LaPresse"
         elif "apnews.com" in link: real_source = "Associated Press"
         elif "reuters.com" in link: real_source = "Reuters"
         elif "afp.com" in link: real_source = "AFP Presse"
         elif "adnkronos.com" in link: real_source = "Adn Kronos"
+        elif "ansa" in real_source.lower() or "ansa" in item.get('title', '').lower(): real_source = "ANSA"
+
+        # Explicitly remove the word 'google' or 'rss' to not display it weirdly
+        real_source = re.sub(r'\"site:.*?\" - Google News', '', real_source, flags=re.IGNORECASE).strip()
+        real_source = re.sub(r'RSS di .*? - ', '', real_source, flags=re.IGNORECASE).strip()
 
         item['source'] = real_source
 
@@ -168,7 +178,8 @@ def main():
                     f["properties"]["description"] += " (Fonte: Agenzie Stampa Internazionali)"
 
     # Read existing map data for today to append new features
-    now = datetime.datetime.now()
+    rome_tz = pytz.timezone('Europe/Rome')
+    now = datetime.datetime.now(rome_tz)
     date_str = now.strftime("%Y-%m-%d")
     tensions_path = os.path.join(generator.site_data_dir, "tensions.json")
 
@@ -176,15 +187,31 @@ def main():
         try:
             with open(tensions_path, "r", encoding="utf-8") as f:
                 history = json.load(f)
-                if date_str in history and "features" in history[date_str]:
-                    existing_features = history[date_str]["features"]
+
+                # Handling format migration if root is FeatureCollection
+                if history.get("type") == "FeatureCollection":
+                    existing_features = history.get("features", [])
+                    history = {date_str: {"features": existing_features, "type": "FeatureCollection"}}
+
+                if date_str in history:
+                    # In history, date_str might map to a dict with "features" OR just "features" inside it
+                    # depending on the structure. Let's make sure we access the correct list
+                    day_data = history[date_str]
+                    if isinstance(day_data, dict) and "features" in day_data:
+                        existing_features = day_data["features"]
+                    elif isinstance(day_data, list):
+                        # fallback just in case
+                        existing_features = day_data
+                    else:
+                        existing_features = []
+
                     # Simple dedup by location and category
                     for new_f in map_data.get("features", []):
                         is_dup = False
                         new_props = new_f.get("properties", {})
                         for ex_f in existing_features:
                             ex_props = ex_f.get("properties", {})
-                            if new_props.get("location_name") == ex_props.get("location_name") and new_props.get("category") == ex_props.get("category"):
+                            if new_props.get("title") == ex_props.get("title") or (new_props.get("location_name") == ex_props.get("location_name") and new_props.get("category") == ex_props.get("category")):
                                 is_dup = True
                                 break
                         if not is_dup:
