@@ -1,7 +1,6 @@
 import os
 import json
 import datetime
-import time
 from dotenv import load_dotenv
 
 # Load Env
