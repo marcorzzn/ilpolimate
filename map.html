@@ -283,10 +283,7 @@ permalink: /map.html
                 errorDiv.style.textAlign = 'center';
                 errorDiv.style.border = '1px solid #333';
                 errorDiv.style.zIndex = '9999';
-                errorDiv.innerHTML = `
-                    <h2 style="font-family: 'Playfair Display', serif; margin-top:0;">Dati Non Ancora Disponibili</h2>
-                    <p style="font-family: 'Inter', sans-serif; opacity: 0.8; max-width: 300px; margin:0 auto;">La mappa delle tensioni è in attesa della prima scansione dell'Agente. Torna più tardi.</p>
-                `;
+
                 const errH2 = document.createElement('h2');
                 errH2.style.cssText = "font-family: 'Playfair Display', serif; margin-top:0;";
                 errH2.textContent = "Dati Non Ancora Disponibili";

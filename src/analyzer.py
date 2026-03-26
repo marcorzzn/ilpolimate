@@ -3,6 +3,7 @@ from openai import OpenAI
 import yfinance as yf
 import json
 import re
+import pandas as pd
 from bs4 import BeautifulSoup
 
 class ContentAnalyzer:
@@ -194,20 +195,34 @@ class ContentAnalyzer:
             # Batch download all tickers in parallel
             hist_data = yf.download(tickers, period="2d", threads=True, progress=False)
 
-            if not hist_data.empty and 'Close' in hist_data.columns.levels[0]:
-                close_data = hist_data['Close']
+            if not hist_data.empty:
+                # Handle single vs multi ticker column structure in yfinance
+                if isinstance(hist_data.columns, pd.MultiIndex):
+                    if 'Close' in hist_data.columns.levels[0]:
+                        close_data = hist_data['Close']
+                    else:
+                        close_data = pd.DataFrame()
+                else:
+                    if 'Close' in hist_data.columns:
+                        # Fallback for single ticker or flat structure
+                        close_data = pd.DataFrame(hist_data['Close'])
+                        # Just assign the first ticker to match logic below
+                        close_data.columns = [tickers[0]]
+                    else:
+                        close_data = pd.DataFrame()
+
                 for name, symbol in symbols.items():
                     if symbol in close_data.columns:
                         hist = close_data[symbol].dropna()
                         if len(hist) >= 2:
-                            last_close = hist.iloc[-2]
-                            current = hist.iloc[-1]
+                            last_close = float(hist.iloc[-2])
+                            current = float(hist.iloc[-1])
                             change = ((current - last_close) / last_close) * 100
                             sign = "+" if change > 0 else ""
                             headline = f"{name} ({symbol}): {current:.2f} ({sign}{change:.2f}%)"
                             market_headlines.append(headline)
                         elif len(hist) == 1:
-                            current = hist.iloc[-1]
+                            current = float(hist.iloc[-1])
                             headline = f"{name} ({symbol}): {current:.2f}"
                             market_headlines.append(headline)
 

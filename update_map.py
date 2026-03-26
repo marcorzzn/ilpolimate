@@ -139,10 +139,10 @@ def main():
                 if isinstance(item.get('published'), str):
                     try:
                         item['published'] = date_parser.parse(item['published'])
-                    except:
+                    except Exception:
                         item['published'] = datetime.datetime.now(datetime.timezone.utc)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Error reading existing latest_news.json: {e}")
 
     # Combine and deduplicate across existing and new
     all_combined_items = filtered_items + existing_items
