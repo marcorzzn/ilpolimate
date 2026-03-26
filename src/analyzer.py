@@ -1,5 +1,4 @@
 import os
-import time
 from openai import OpenAI
 import yfinance as yf
 import json

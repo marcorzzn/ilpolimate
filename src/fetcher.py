@@ -1,7 +1,6 @@
 import feedparser
 import concurrent.futures
 import datetime
-import time
 
 class FeedFetcher:
     def __init__(self, lookback_hours=24, max_workers=20):
