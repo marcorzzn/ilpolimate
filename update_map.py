@@ -194,6 +194,9 @@ def main():
         except Exception as e:
             print(f"Error reading existing map data: {e}")
 
+    # Only save if there are features to save, keeping historical dates intact if current features are empty
+    # Wait, the history contains past dates too. generator.save_tensions_map takes geojson_data and updates the history.
+    # If the map_data features are empty, let's still save it, because the frontend now handles empty features gracefully.
     generator.save_tensions_map(map_data, now)
     
     print(f">>> SUCCESS. Map Update complete for {now.strftime('%Y-%m-%d %H:%M:%S')}")
