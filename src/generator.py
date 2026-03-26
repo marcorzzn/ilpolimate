@@ -61,12 +61,14 @@ categories: [brief]
 """
 
         # 2. Clusters (The Feed)
-        md += '\n<div class="feed-section">\n<div class="feed-grid">\n'
+        md_parts = [md, '\n<div class="feed-section">\n<div class="feed-grid">\n']
         for cluster_name, content in clusters_content.items():
             if content:
                 # Wrap each cluster in a card
-                md += f"\n<div class=\"feed-cluster\">\n<div class=\"cluster-header\">{cluster_name}</div>\n\n{content}\n</div>\n"
-        md += '\n</div>\n</div>\n'
+                md_parts.append(f"\n<div class=\"feed-cluster\">\n<div class=\"cluster-header\">{cluster_name}</div>\n\n{content}\n</div>\n")
+        md_parts.append('\n</div>\n</div>\n')
+
+        md = "".join(md_parts)
 
         filename = os.path.join(self.output_dir, f"{date_str}-brief.md")
         with open(filename, "w", encoding="utf-8") as f:
