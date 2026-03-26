@@ -63,14 +63,15 @@ def main():
     map_data = analyzer.analyze_tensions_map(full_context_str)
     
     
+    import re
     # Strictly filter sources for Ultima Ora to exactly the requested 7 agencies.
     allowed_sources = ["ansa", "agi", "adn kronos", "adnkronos", "lapresse", "associated press", "ap", "reuters", "afp", "google news"]
+    allowed_pattern = re.compile('|'.join(re.escape(a) for a in allowed_sources), re.IGNORECASE)
     filtered_items = []
 
     # Pre-translate Google News RSS sources back to their real names for clarity
     for item in all_raw_items:
         link = item.get('link', '').lower()
-        src_lower = item['source'].lower()
 
         real_source = item['source']
         if "lapresse.it" in link: real_source = "LaPresse"
@@ -80,10 +81,9 @@ def main():
         elif "adnkronos.com" in link: real_source = "Adn Kronos"
 
         item['source'] = real_source
-        src_lower = real_source.lower()
 
-        # Ensure it belongs to one of the agencies
-        if any(allowed in src_lower for allowed in allowed_sources):
+        # Ensure it belongs to one of the agencies using pre-compiled regex
+        if allowed_pattern.search(real_source):
             filtered_items.append(item)
             
     # Deduplicate items in "Ultima Ora"
