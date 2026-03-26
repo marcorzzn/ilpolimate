@@ -1,8 +1,8 @@
-name: Daily Polymath Brief (Free Tier)
+name: Hourly Map Update
 
 on:
   schedule:
-    - cron: '0 7 * * *'    # Rassegna giornaliera alle 07:00
+    - cron: '0 * * * *'    # Mappa e Ultima Ora aggiornate ogni ora
   workflow_dispatch:
 
 permissions:
@@ -24,16 +24,16 @@ jobs:
       - name: Install Libraries
         run: pip install -r requirements.txt
 
-      - name: Run Generator Script (Daily Brief)
+      - name: Run Map Tensions Updater (Hourly)
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-        run: python daily_brief.py
+        run: python update_map.py
 
       - name: Commit and Push Report
         run: |
           git config --global user.name 'Polymath Bot'
           git config --global user.email 'bot@users.noreply.github.com'
-          git add _posts/
-          git commit -m "Automated Content Update: Brief $(date)" || echo "Nessun cambiamento"
+          git add assets/data/
+          git commit -m "Automated Map Update $(date)" || echo "Nessun cambiamento"
           git push

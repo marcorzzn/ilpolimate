@@ -177,9 +177,10 @@ permalink: /map.html
         <h1>MAPPA DELLE TENSIONI</h1>
         <p class="sub">Osservatorio Sistemico Globale</p>
         <div style="margin-top: 15px; font-size: 0.8rem;">
-            <div style="margin-bottom: 5px;"><span style="color:#ff3333">●</span> Conflitti Armati</div>
-            <div style="margin-bottom: 5px;"><span style="color:#ff9900">●</span> Instabilità Civile</div>
-            <div><span style="color:#9933ff">●</span> Eventi Critici</div>
+            <div style="margin-bottom: 5px;"><span style="color:#ff3333; text-shadow: 0 0 5px #ff3333;">●</span> Conflitti Armati</div>
+            <div style="margin-bottom: 5px;"><span style="color:#ff9900; text-shadow: 0 0 5px #ff9900;">●</span> Instabilità Civile</div>
+            <div style="margin-bottom: 5px;"><span style="color:#ffee00; text-shadow: 0 0 5px #ffee00;">●</span> Disastri Naturali</div>
+            <div><span style="color:#9933ff; text-shadow: 0 0 5px #9933ff;">●</span> Eventi Critici</div>
         </div>
     </div>
 
@@ -224,6 +225,7 @@ permalink: /map.html
             if (cat === 'CONFLICT') return '#ff3333';
             if (cat === 'PROTEST') return '#ff9900';
             if (cat === 'INFRASTRUCTURE_CRITICAL') return '#9933ff';
+            if (cat === 'DISASTER_NATURAL') return '#ffee00';
             return '#888888';
         }
 
@@ -300,22 +302,88 @@ permalink: /map.html
             if (featureCollection && featureCollection.features) {
                 geojsonLayer = L.geoJSON(featureCollection, {
                     pointToLayer: function (feature, latlng) {
+                        const color = getColor(feature.properties.category);
                         return L.circleMarker(latlng, {
                             radius: 6 + (feature.properties.intensity || 0),
-                            fillColor: getColor(feature.properties.category),
-                            color: "#000",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8,
+                            fillColor: color,
+                            color: color, // Glow effect
+                            weight: 2,
+                            opacity: 0.8,
+                            fillOpacity: 0.6,
                             className: 'pulse-icon'
+                        }).bindTooltip(feature.properties.title, {
+                            permanent: false,
+                            direction: 'top',
+                            className: 'custom-tooltip'
                         });
                     },
                     onEachFeature: function (feature, layer) {
                         layer.on('click', function () {
                             showPanel(feature.properties);
+                            // Fly to the clicked location
+                            map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 4), {
+                                duration: 1.5
+                            });
                         });
                     }
                 }).addTo(map);
+
+                // Add a dynamic side panel list of active events
+                updateEventList(featureCollection.features);
+            }
+        }
+
+        function updateEventList(features) {
+            let eventListPanel = document.getElementById('eventListPanel');
+            if (!eventListPanel) {
+                eventListPanel = document.createElement('div');
+                eventListPanel.id = 'eventListPanel';
+                eventListPanel.style.position = 'absolute';
+                eventListPanel.style.bottom = '80px';
+                eventListPanel.style.left = '20px';
+                eventListPanel.style.width = '300px';
+                eventListPanel.style.maxHeight = '300px';
+                eventListPanel.style.background = 'rgba(0,0,0,0.8)';
+                eventListPanel.style.border = '1px solid #333';
+                eventListPanel.style.borderLeft = '3px solid #666';
+                eventListPanel.style.overflowY = 'auto';
+                eventListPanel.style.zIndex = '1000';
+                eventListPanel.style.padding = '10px';
+                document.body.appendChild(eventListPanel);
+            }
+
+            let html = '<h3 style="margin:0 0 10px 0; font-family:\'Inter\', sans-serif; font-size:1rem; border-bottom:1px solid #444; padding-bottom:5px;">Live Events Feed</h3>';
+
+            if (!features || features.length === 0) {
+                html += '<p style="font-size:0.8rem; color:#888;">Nessun evento registrato nella finestra temporale.</p>';
+            } else {
+                // Reverse to show newest roughly at top (assuming features added sequentially)
+                [...features].reverse().forEach((f, idx) => {
+                    const color = getColor(f.properties.category);
+                    html += `
+                        <div style="margin-bottom: 8px; cursor:pointer; font-size:0.85rem; padding: 5px; border-radius: 4px; transition: background 0.2s;"
+                             onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                             onmouseout="this.style.background='transparent'"
+                             onclick="triggerMarkerClick(${idx})">
+                            <span style="color:${color}; text-shadow: 0 0 5px ${color};">●</span>
+                            <strong>${f.properties.location_name || 'Sconosciuto'}</strong>:
+                            <span style="opacity:0.8;">${f.properties.title}</span>
+                        </div>
+                    `;
+                });
+            }
+            eventListPanel.innerHTML = html;
+        }
+
+        // Helper to programmatically click markers from the side list
+        function triggerMarkerClick(idx) {
+            if (geojsonLayer) {
+                const layers = geojsonLayer.getLayers();
+                // We reversed the array for display, so we reverse the index back
+                const realIdx = layers.length - 1 - idx;
+                if (layers[realIdx]) {
+                    layers[realIdx].fire('click');
+                }
             }
         }
 

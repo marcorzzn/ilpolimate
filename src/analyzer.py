@@ -20,28 +20,29 @@ class ContentAnalyzer:
         if not items: return None
         if not self.groq_client: return None
         
-        # Prepare context
-        context_text = ""
+        # Prepare context (Optimized string concatenation)
+        context_parts = []
         for item in items:
-            context_text += f"SOURCE: {item['source']}\nTITLE: {item['title']}\nLINK: {item['link']}\nCONTENT: {item['content']}\n\n---\n\n"
+            context_parts.append(f"SOURCE: {item['source']}\nTITLE: {item['title']}\nLINK: {item['link']}\nCONTENT: {item['content']}\n\n---\n\n")
+        context_text = "".join(context_parts)
         
         prompt = f"""
         ACT AS: Senior Tech Intelligence Analyst for 'Il Polimate'.
         SECTOR: {cluster_name}
         
-        OBJECTIVE: Analyze the provided news items and generate a High-Density Intelligence Report.
+        OBJECTIVE: Analyze the provided news items and generate a High-Density Intelligence Report, strictly prioritizing tier-0, -1, and -2 sources and true breakthroughs.
         
         INPUT DATA: {len(items)} source items.
         
         INSTRUCTIONS:
-        1. Scan ALL items.
-        2. Identify the top 2-3 most significant technical or strategic developments.
+        1. Scan ALL items and rigorously discard noise.
+        2. Identify the top 3-4 most significant technical or strategic developments that represent real steps forward compared to traditional news.
         3. For each development, write a structured HTML block (NO MARKDOWN).
         
         BLOCK FORMAT (Strict HTML):
         <div class="news-item">
             <h3>[Italian Title, Elegante & Impattante]</h3>
-            <p>[Body: 3-4 sentences in elegant, astute, cultured Italian. Focus on the core mechanism and implication. Not too verbose.]</p>
+            <p>[Body: 3-4 sentences in elegant, astute, cultured Italian. Focus on the core mechanism and strategic implication. Not too verbose.]</p>
             <p class="source-link"><a href="Current_Link_From_Input" target="_blank">Fonte: Source Name</a></p>
         </div>
         
@@ -70,9 +71,10 @@ class ContentAnalyzer:
             soup = BeautifulSoup(raw_html, "html.parser")
             
             # For each news-item, ensure it's not nested inside another news-item due to missing closing divs
-            clean_html = ""
+            clean_html_parts = []
             for item in soup.find_all('div', class_='news-item', recursive=False):
-                clean_html += str(item) + "\n"
+                clean_html_parts.append(str(item) + "\n")
+            clean_html = "".join(clean_html_parts)
                 
             # If the above fails to find top-level news-items, fallback to full soup
             if not clean_html.strip():
@@ -98,9 +100,10 @@ class ContentAnalyzer:
         
         prompt = """
         ACT AS: Systemic Editor for 'Il Polimate'.
-        TASK: Seleziona la notizia o il macro-trend più importante in assoluto a livello globale tra quelli forniti, e scrivi l'editoriale da prima pagina 'Meccanismi'.
+        TASK: Tra TUTTI i dati forniti, individua l'UNICA notizia o il singolo macro-trend più scottante, dirompente e importante in assoluto a livello globale (priorità a breakthrough da fonti tier 0, -1, -2).
+        Scrivi l'editoriale quotidiano da prima pagina 'Meccanismi' basandoti ESCLUSIVAMENTE su questo singolo tema centrale.
         
-        PHILOSOPHY: L'analisi deve essere acuta, scaltra, colta ed erudita, ma mai inutilmente verbosa. Spiega i legami profondi tra geopolitica, tecnologia ed economia.
+        PHILOSOPHY: L'analisi deve essere acuta, scaltra, colta ed erudita, ma mai inutilmente verbosa. Spiega i legami profondi tra geopolitica, tecnologia, economia e l'impatto di questa notizia.
         
         STRUCTURE:
         Scrivi il Titolo Elegante e d'Impatto in grassetto o come Header Markdown, seguito dal Sottotitolo.
@@ -228,24 +231,25 @@ class ContentAnalyzer:
         - PROTEST (Orange)
         - INFRASTRUCTURE_CRITICAL (Purple)
         - BORDER_DISPUTE (Grey)
+        - DISASTER_NATURAL (Yellow)
         
-        OUTPUT: JSON Object with a 'features' list (GeoJSON style).
+        OUTPUT: JSON Object with a 'features' list. Note: WE WILL ADD GEOJSON GEOMETRY LATER.
         Each feature must have:
         - type: "Feature"
-        - geometry: {type: "Point", coordinates: [lon, lat]}
         - properties: {
             category: "CONFLICT",
             title: "Brief Title",
             description: "Technical description",
-            intensity: 1-10
+            intensity: 1-10,
+            location_name: "Exact City, Country"
           }
         
         EXTREME CRITICAL INSTRUCTIONS: 
-        1. Extract ALL distinct tension events from the provided text. BE HYPER LOCAL AND GRANULAR. Do NOT invent events that are not in the text.
-        2. DO NOT GROUP EVENTS. A protest in Paris and a protest in Lyon are TWO separate events. An attack in Kyiv and one in Kharkiv are TWO events.
-        3. Search for EVERY military incident, EVERY protest, EVERY hack, EVERY diplomatic friction, EVERY infrastructure issue.
-        4. YOU MUST INVENT/ESTIMATE the EXACT LOCAL lat/lon based on the city/region mentioned. Use 4 decimal precision. Format MUST be [longitude, latitude].
-        5. DO NOT REPEAT THE SAME EVENT MULTIPLE TIMES. Each feature must be a distinct physical event. Do not hallucinate coordinates.
+        1. Extract ALL distinct tension events (conflicts, protests, natural disasters, infrastructural issues) from the provided text. BE HYPER LOCAL AND GRANULAR. Do NOT invent events that are not in the text.
+        2. DO NOT GROUP EVENTS. A protest in Paris and a protest in Lyon are TWO separate events. An earthquake in Tokyo and one in Kyoto are TWO events.
+        3. Search for EVERY military incident, EVERY protest, EVERY hack, EVERY diplomatic friction, EVERY infrastructure issue, EVERY natural disaster (earthquakes, floods, etc).
+        4. Extract the EXACT location name (e.g. "Kyiv, Ukraine", "Paris, France"). Do not invent coordinates. Put it in `location_name`.
+        5. DO NOT REPEAT THE SAME EVENT MULTIPLE TIMES. Each feature must be a distinct physical event.
         """
         
         try:
@@ -264,11 +268,42 @@ class ContentAnalyzer:
             raw_text = response.choices[0].message.content.strip()
             
             if raw_text.startswith("```json"):
-                raw_text = raw_text.replace("```json", "").replace("```", "").strip()
-            elif raw_text.startswith("```"):
-                raw_text = raw_text.replace("```", "").strip()
+                raw_text = raw_text.replace("```json", "", 1)
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:raw_text.rfind("```")]
+            raw_text = raw_text.strip()
                 
-            return json.loads(raw_text)
+            data = json.loads(raw_text)
+
+            # Geocode the locations
+            from geopy.geocoders import Nominatim
+            from geopy.exc import GeocoderTimedOut
+            import time as geopy_time
+
+            geolocator = Nominatim(user_agent="ilpolimate_map_updater")
+
+            if "features" in data:
+                valid_features = []
+                for f in data["features"]:
+                    loc_name = f.get("properties", {}).get("location_name")
+                    if loc_name:
+                        try:
+                            geopy_time.sleep(1) # Respect Nominatim rate limit
+                            location = geolocator.geocode(loc_name)
+                            if location:
+                                f["geometry"] = {
+                                    "type": "Point",
+                                    "coordinates": [location.longitude, location.latitude]
+                                }
+                                valid_features.append(f)
+                            else:
+                                print(f"Could not geocode location: {loc_name}")
+                        except Exception as geo_e:
+                            print(f"Geocoding error for {loc_name}: {geo_e}")
+                data["features"] = valid_features
+
+            return data
+
         except Exception as e:
             print(f"Map Generation Error ({model_name}): {e}")
             return {"type": "FeatureCollection", "features": []}

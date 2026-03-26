@@ -9,3 +9,5 @@ lxml
 requests
 gTTS
 markdown
+python-dateutil
+geopy
