@@ -163,7 +163,8 @@ def main():
         for f in map_data["features"]:
             if "properties" in f and "description" in f["properties"]:
                 desc = f["properties"]["description"]
-                if "FONTE:" not in desc.upper() and "AGENCY:" not in desc.upper():
+                desc_upper = desc.upper()
+                if "FONTE:" not in desc_upper and "AGENCY:" not in desc_upper:
                     # Fallback append if model missed the explicit instruction
                     f["properties"]["description"] += " (Fonte: Agenzie Stampa Internazionali)"
 
