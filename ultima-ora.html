@@ -232,7 +232,18 @@ permalink: /ultima-ora.html
                     const newsDesc = document.createElement('div');
                     newsDesc.className = 'news-desc';
                     // Strip HTML tags and entities from description for clean text display
-                    newsDesc.textContent = desc.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+                    // Decode HTML entities securely to avoid DOM-based XSS
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(desc, "text/html");
+                    let decodedDesc = doc.documentElement.textContent || "";
+
+                    // Further strip any remaining raw HTML string representations (e.g. from attributes) that textContent might leave behind
+                    decodedDesc = decodedDesc.replace(/<a\s+href=[^>]+>/g, '').replace(/<\/a>/g, '');
+                    decodedDesc = decodedDesc.replace(/<font[^>]*>/gi, '').replace(/<\/font>/gi, '');
+                    decodedDesc = decodedDesc.replace(/<[^>]*>?/gm, ''); // blanket catch all
+
+                    newsDesc.textContent = decodedDesc.replace(/&nbsp;/g, ' ').trim();
 
                     wrap.appendChild(newsTime);
                     wrap.appendChild(newsTitle);

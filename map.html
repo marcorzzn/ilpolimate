@@ -258,14 +258,24 @@ permalink: /map.html
                 if (mapDates.length > 0) {
                     const slider = document.getElementById('timeSlider');
                     slider.max = mapDates.length - 1;
-                    slider.value = mapDates.length - 1;
                     document.getElementById('timelineContainer').style.display = 'flex';
 
                     slider.addEventListener('input', (e) => {
                         renderDate(mapDates[e.target.value]);
                     });
 
-                    renderDate(mapDates[mapDates.length - 1]);
+                    // Find the most recent date with actual features
+                    let defaultDateIdx = mapDates.length - 1;
+                    for (let i = mapDates.length - 1; i >= 0; i--) {
+                        let featColl = mapData[mapDates[i]];
+                        if (featColl && featColl.features && featColl.features.length > 0) {
+                            defaultDateIdx = i;
+                            break;
+                        }
+                    }
+
+                    slider.value = defaultDateIdx;
+                    renderDate(mapDates[defaultDateIdx]);
                 }
             })
             .catch(err => {
