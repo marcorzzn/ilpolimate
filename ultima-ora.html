@@ -169,7 +169,24 @@ permalink: /ultima-ora.html
                 // Generate relative times / parse
                 data.forEach(item => {
                     const wrap = document.createElement('a');
-                    wrap.href = item.link;
+                    // Sanitizza link
+                    try {
+                        const url = new URL(item.link, window.location.origin);
+                        if (['http:', 'https:'].includes(url.protocol)) {
+                            wrap.href = item.link;
+                        } else if (item.link.startsWith('/')) {
+                            wrap.href = item.link;
+                        } else {
+                            wrap.href = '#';
+                        }
+                    } catch (e) {
+                        if (item.link && item.link.startsWith('/')) {
+                            wrap.href = item.link;
+                        } else {
+                            wrap.href = '#';
+                        }
+                    }
+
                     wrap.target = "_blank";
                     wrap.className = "news-card";
 
@@ -192,6 +209,29 @@ permalink: /ultima-ora.html
                         desc = desc.substring(desc.indexOf("]") + 1).replace(/^ - /, "").trim();
                     }
 
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'news-time';
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.textContent = timeStr;
+                    timeDiv.appendChild(timeSpan);
+
+                    const sourceSpan = document.createElement('span');
+                    sourceSpan.className = 'news-source';
+                    sourceSpan.textContent = sourceName;
+                    timeDiv.appendChild(sourceSpan);
+
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'news-title';
+                    titleDiv.textContent = item.title;
+
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'news-desc';
+                    descDiv.textContent = desc;
+
+                    wrap.appendChild(timeDiv);
+                    wrap.appendChild(titleDiv);
+                    wrap.appendChild(descDiv);
                     // Securely construct DOM to prevent XSS
                     const newsTime = document.createElement('div');
                     newsTime.className = 'news-time';

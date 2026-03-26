@@ -90,6 +90,15 @@ title: Home
                     if (isNegative) color = "#dd0000";
 
                     const a = document.createElement('a');
+                    a.href = symbol ? `https://www.google.com/finance/quote/${symbol}?hl=it` : 'https://www.google.com/finance/?hl=it';
+                    a.target = '_blank';
+                    a.className = 'ticker-link';
+                    a.style.color = color;
+                    a.textContent = text;
+                    container1.appendChild(a);
+
+                    const aClone = a.cloneNode(true);
+                    container2.appendChild(aClone);
                     a.href = symbol ? `https://www.google.com/finance/quote/${symbol}?hl=it` : `https://www.google.com/finance/?hl=it`;
                     a.target = "_blank";
                     a.className = "ticker-link";
@@ -97,9 +106,6 @@ title: Home
                     a.textContent = text;
                     container1.appendChild(a);
                 });
-
-                // Clone contents for seamless scrolling loop
-                container2.innerHTML = container1.innerHTML;
             }).catch(e => console.log("Ticker non disponibile", e));
     </script>
 </div>
