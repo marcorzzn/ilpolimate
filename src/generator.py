@@ -50,6 +50,7 @@ categories: [brief]
                 # Wrap each cluster in a card
                 md_parts.append(f"\n<div class=\"feed-cluster\">\n<div class=\"cluster-header\">{cluster_name}</div>\n\n{content}\n</div>\n")
         md_parts.append('\n</div>\n</div>\n')
+        md = "".join(md_parts)
         final_md = "".join(md_parts)
 
         filename = os.path.join(self.output_dir, f"{date_str}-brief.md")
