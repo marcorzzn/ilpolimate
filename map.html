@@ -253,7 +253,11 @@ permalink: /map.html
                     mapData = data;
                 }
 
-                mapDates = Object.keys(mapData).sort();
+                // Filter out dates with empty features arrays to avoid showing a blank map
+                mapDates = Object.keys(mapData).filter(date => {
+                    const fc = mapData[date];
+                    return fc && fc.features && fc.features.length > 0;
+                }).sort();
 
                 if (mapDates.length > 0) {
                     const slider = document.getElementById('timeSlider');

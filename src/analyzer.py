@@ -200,14 +200,14 @@ class ContentAnalyzer:
                     if symbol in close_data.columns:
                         hist = close_data[symbol].dropna()
                         if len(hist) >= 2:
-                            last_close = hist.iloc[-2]
-                            current = hist.iloc[-1]
+                            last_close = float(hist.iloc[-2])
+                            current = float(hist.iloc[-1])
                             change = ((current - last_close) / last_close) * 100
                             sign = "+" if change > 0 else ""
                             headline = f"{name} ({symbol}): {current:.2f} ({sign}{change:.2f}%)"
                             market_headlines.append(headline)
                         elif len(hist) == 1:
-                            current = hist.iloc[-1]
+                            current = float(hist.iloc[-1])
                             headline = f"{name} ({symbol}): {current:.2f}"
                             market_headlines.append(headline)
 
