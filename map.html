@@ -391,11 +391,23 @@ permalink: /map.html
             const panel = document.getElementById('contextPanel');
             const content = document.getElementById('panelContent');
 
-            content.innerHTML = `
-                <span class="panel-meta">${props.category} | INTENSITY: ${props.intensity}/10</span>
-                <h2 class="panel-title">${props.title}</h2>
-                <div class="panel-desc">${props.description}</div>
-            `;
+            content.innerHTML = '';
+
+            const metaSpan = document.createElement('span');
+            metaSpan.className = 'panel-meta';
+            metaSpan.textContent = `${props.category} | INTENSITY: ${props.intensity}/10`;
+
+            const titleH2 = document.createElement('h2');
+            titleH2.className = 'panel-title';
+            titleH2.textContent = props.title;
+
+            const descDiv = document.createElement('div');
+            descDiv.className = 'panel-desc';
+            descDiv.textContent = props.description;
+
+            content.appendChild(metaSpan);
+            content.appendChild(titleH2);
+            content.appendChild(descDiv);
 
             panel.classList.add('active');
         }
