@@ -1,7 +1,6 @@
 import os
 import datetime
 import json
-import re
 import markdown
 
 class ReportGenerator:
