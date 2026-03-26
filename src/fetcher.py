@@ -2,14 +2,6 @@ import feedparser
 import concurrent.futures
 import datetime
 import time
-import re
-
-_HTML_TAGS_RE = re.compile(r'<p>|</p>|<div>|</div>|<br>|<br/>')
-_HTML_TAGS_MAP = {
-    '<p>': '', '</p>': '\n',
-    '<div>': '', '</div>': '',
-    '<br>': '\n', '<br/>': '\n'
-}
 
 class FeedFetcher:
     def __init__(self, lookback_hours=24, max_workers=20):
@@ -59,7 +51,9 @@ class FeedFetcher:
 
     def _clean_html(self, text):
         # Basic cleanup, can be improved with BeautifulSoup if heavy HTML
-        text = _HTML_TAGS_RE.sub(lambda m: _HTML_TAGS_MAP[m.group(0)], text)
+        text = text.replace('<p>', '').replace('</p>', '\n')\
+                   .replace('<div>', '').replace('</div>', '')\
+                   .replace('<br>', '\n').replace('<br/>', '\n')
         # Remove massive whitespace
         return "\n".join([line.strip() for line in text.splitlines() if line.strip()])
 

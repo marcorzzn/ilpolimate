@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import time
+import pytz
 from dotenv import load_dotenv
 
 # Load Env
@@ -56,7 +57,8 @@ def main():
     mechanism_text = analyzer.analyze_mechanism_daily(full_context_str)
     
     # 5. Publishing Prep
-    now = datetime.datetime.now()
+    rome_tz = pytz.timezone('Europe/Rome')
+    now = datetime.datetime.now(rome_tz)
 
     # B. Tensions Map
     print("   > Generating 'Mappa delle Tensioni' Data...")
@@ -70,7 +72,6 @@ def main():
     
     # 5. Publishing
     print(">>> Phase 4: Finalizing Report...")
-    now = datetime.datetime.now()
     output_file = generator.save_daily_brief(now, cluster_results, mechanism_text)
     
     print(f"SUCCESS. Report saved to: {output_file}")
