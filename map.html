@@ -283,10 +283,16 @@ permalink: /map.html
                 errorDiv.style.textAlign = 'center';
                 errorDiv.style.border = '1px solid #333';
                 errorDiv.style.zIndex = '9999';
-                errorDiv.innerHTML = `
-                    <h2 style="font-family: 'Playfair Display', serif; margin-top:0;">Dati Non Ancora Disponibili</h2>
-                    <p style="font-family: 'Inter', sans-serif; opacity: 0.8; max-width: 300px; margin:0 auto;">La mappa delle tensioni è in attesa della prima scansione dell'Agente. Torna più tardi.</p>
-                `;
+                const errH2 = document.createElement('h2');
+                errH2.style.cssText = "font-family: 'Playfair Display', serif; margin-top:0;";
+                errH2.textContent = "Dati Non Ancora Disponibili";
+
+                const errP = document.createElement('p');
+                errP.style.cssText = "font-family: 'Inter', sans-serif; opacity: 0.8; max-width: 300px; margin:0 auto;";
+                errP.textContent = "La mappa delle tensioni è in attesa della prima scansione dell'Agente. Torna più tardi.";
+
+                errorDiv.appendChild(errH2);
+                errorDiv.appendChild(errP);
                 document.body.appendChild(errorDiv);
             });
 
@@ -352,27 +358,47 @@ permalink: /map.html
                 document.body.appendChild(eventListPanel);
             }
 
-            let html = '<h3 style="margin:0 0 10px 0; font-family:\'Inter\', sans-serif; font-size:1rem; border-bottom:1px solid #444; padding-bottom:5px;">Live Events Feed</h3>';
+            eventListPanel.textContent = ''; // Clear previous content
+
+            const header = document.createElement('h3');
+            header.style.cssText = "margin:0 0 10px 0; font-family:'Inter', sans-serif; font-size:1rem; border-bottom:1px solid #444; padding-bottom:5px;";
+            header.textContent = 'Live Events Feed';
+            eventListPanel.appendChild(header);
 
             if (!features || features.length === 0) {
-                html += '<p style="font-size:0.8rem; color:#888;">Nessun evento registrato nella finestra temporale.</p>';
+                const emptyMsg = document.createElement('p');
+                emptyMsg.style.cssText = "font-size:0.8rem; color:#888;";
+                emptyMsg.textContent = 'Nessun evento registrato nella finestra temporale.';
+                eventListPanel.appendChild(emptyMsg);
             } else {
                 // Reverse to show newest roughly at top (assuming features added sequentially)
                 [...features].reverse().forEach((f, idx) => {
                     const color = getColor(f.properties.category);
-                    html += `
-                        <div style="margin-bottom: 8px; cursor:pointer; font-size:0.85rem; padding: 5px; border-radius: 4px; transition: background 0.2s;"
-                             onmouseover="this.style.background='rgba(255,255,255,0.1)'"
-                             onmouseout="this.style.background='transparent'"
-                             onclick="triggerMarkerClick(${idx})">
-                            <span style="color:${color}; text-shadow: 0 0 5px ${color};">●</span>
-                            <strong>${f.properties.location_name || 'Sconosciuto'}</strong>:
-                            <span style="opacity:0.8;">${f.properties.title}</span>
-                        </div>
-                    `;
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.style.cssText = "margin-bottom: 8px; cursor:pointer; font-size:0.85rem; padding: 5px; border-radius: 4px; transition: background 0.2s;";
+                    itemDiv.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.1)'; };
+                    itemDiv.onmouseout = function() { this.style.background = 'transparent'; };
+                    itemDiv.onclick = function() { triggerMarkerClick(idx); };
+
+                    const dotSpan = document.createElement('span');
+                    dotSpan.style.cssText = `color:${color}; text-shadow: 0 0 5px ${color}; margin-right: 4px;`;
+                    dotSpan.textContent = '●';
+
+                    const locStrong = document.createElement('strong');
+                    locStrong.textContent = (f.properties.location_name || 'Sconosciuto') + ': ';
+
+                    const titleSpan = document.createElement('span');
+                    titleSpan.style.cssText = "opacity:0.8;";
+                    titleSpan.textContent = f.properties.title;
+
+                    itemDiv.appendChild(dotSpan);
+                    itemDiv.appendChild(locStrong);
+                    itemDiv.appendChild(titleSpan);
+
+                    eventListPanel.appendChild(itemDiv);
                 });
             }
-            eventListPanel.innerHTML = html;
         }
 
         // Helper to programmatically click markers from the side list
@@ -391,11 +417,23 @@ permalink: /map.html
             const panel = document.getElementById('contextPanel');
             const content = document.getElementById('panelContent');
 
-            content.innerHTML = `
-                <span class="panel-meta">${props.category} | INTENSITY: ${props.intensity}/10</span>
-                <h2 class="panel-title">${props.title}</h2>
-                <div class="panel-desc">${props.description}</div>
-            `;
+            content.textContent = ''; // Clear previous content
+
+            const metaSpan = document.createElement('span');
+            metaSpan.className = 'panel-meta';
+            metaSpan.textContent = `${props.category} | INTENSITY: ${props.intensity}/10`;
+
+            const titleH2 = document.createElement('h2');
+            titleH2.className = 'panel-title';
+            titleH2.textContent = props.title;
+
+            const descDiv = document.createElement('div');
+            descDiv.className = 'panel-desc';
+            descDiv.textContent = props.description;
+
+            content.appendChild(metaSpan);
+            content.appendChild(titleH2);
+            content.appendChild(descDiv);
 
             panel.classList.add('active');
         }
