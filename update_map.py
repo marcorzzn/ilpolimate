@@ -14,29 +14,32 @@ from src.generator import ReportGenerator
 def main():
     print(">>> IL POLIMATE: 6H Map Update Start")
     
-    fetcher = FeedFetcher(lookback_hours=12) # Focus on very recent events
+    # Look back only 2 hours for the hourly update to catch anything recent but avoid overload
+    fetcher = FeedFetcher(lookback_hours=2)
     analyzer = ContentAnalyzer()
     generator = ReportGenerator()
     
     # 1. Tier-1 News Agencies Source List
-    # We use RSS feeds where available or standard scraping sources for them.
-    # Some exact raw RSS feeds for agencies might require specific exactness:
-    # We will use reliable aggregate open proxies or direct feeds where available.
-    
+    # As requested: ANSA, AGI Italia, Adn Kronos, LaPresse, Associated Press, Reuters, AFP Presse.
     wire_agencies_urls = [
-         # Reuters News proxy/RSS
-        "https://www.reutersagency.com/feed/?best-regions=europe&post_type=best",
-        "https://www.reutersagency.com/feed/?best-topics=political-general&post_type=best",
-         # Associated Press (AP News)
-        "https://moxie.foxnews.com/google-publisher/world.xml",
-         # AFP 
-        "https://www.france24.com/en/rss", 
-         # Italian Agencies 
-         # ANSA
+        # ANSA
+        "https://www.ansa.it/sito/notizie/topnews/topnews_rss.xml",
         "https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml",
-        "https://www.ansa.it/sito/notizie/politica/politica_rss.xml",
-         # AGI
-        "https://www.agi.it/estero/rss"
+        # AGI Italia
+        "https://www.agi.it/estero/rss",
+        "https://www.agi.it/politica/rss",
+        "https://www.agi.it/cronaca/rss",
+        # Adn Kronos
+        "https://www.adnkronos.com/Rss/Esteri.xml",
+        "https://www.adnkronos.com/Rss/Cronaca.xml",
+        # LaPresse
+        "https://news.google.com/rss/search?q=site:lapresse.it+when:1d&hl=it&gl=IT&ceid=IT:it",
+        # Associated Press
+        "https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en",
+        # Reuters
+        "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en",
+        # AFP
+        "https://news.google.com/rss/search?q=site:afp.com+when:1d&hl=en-US&gl=US&ceid=US:en"
     ]
     
     # 2. Gathering
@@ -59,34 +62,138 @@ def main():
     map_data = analyzer.analyze_tensions_map(full_context_str)
     
     
-    # Strictly filter sources for Ultima Ora to only exactly the requested 5.
-    allowed_sources = ["ansa", "agi", "afp", "associated press", "ap", "reuters"]
+    import re
+    # Strictly filter sources for Ultima Ora to exactly the requested 7 agencies.
+    allowed_sources = ["ansa", "agi", "adn kronos", "adnkronos", "lapresse", "associated press", "ap", "reuters", "afp", "google news"]
+    allowed_pattern = re.compile('|'.join(re.escape(a) for a in allowed_sources), re.IGNORECASE)
     filtered_items = []
+
+    # Pre-translate Google News RSS sources back to their real names for clarity
     for item in all_raw_items:
-        src_lower = item['source'].lower()
-        # Ensure it belongs to one of the 5 agencies
-        if any(allowed in src_lower for allowed in allowed_sources):
+        link = item.get('link', '').lower()
+
+        real_source = item['source']
+        if "lapresse.it" in link: real_source = "LaPresse"
+        elif "apnews.com" in link: real_source = "Associated Press"
+        elif "reuters.com" in link: real_source = "Reuters"
+        elif "afp.com" in link: real_source = "AFP Presse"
+        elif "adnkronos.com" in link: real_source = "Adn Kronos"
+
+        item['source'] = real_source
+
+        # Ensure it belongs to one of the agencies using pre-compiled regex
+        if allowed_pattern.search(real_source):
             filtered_items.append(item)
             
+    # Deduplicate items in "Ultima Ora"
+    # Basic deduplication using difflib to remove very similar titles
+    import difflib
+    deduped_items = []
+    for item in filtered_items:
+        is_duplicate = False
+        for d_item in deduped_items:
+            # Check for identical links
+            if item['link'] == d_item['link']:
+                is_duplicate = True
+                break
+            # Check for very similar titles
+            similarity = difflib.SequenceMatcher(None, item['title'].lower(), d_item['title'].lower()).ratio()
+            if similarity > 0.8:
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            deduped_items.append(item)
+
+    filtered_items = deduped_items
+
+    # Sort items purely by timestamp descending (newest first)
+    # The `published` field is a datetime.datetime object
+    filtered_items.sort(key=lambda x: x['published'], reverse=True)
+
     # Translate Ultima Ora titles AND contents
     print(f">>> Translating {len(filtered_items)} Ultima Ora items to Italian...")
     filtered_items = analyzer.translate_ultima_ora(filtered_items)
     
-    # Dump the raw feed for the Ultima Ora UI
+    # Append to existing latest_news.json to keep a longer history of the day
+    # since we only fetch the last 2 hours. We want to keep up to 50 items.
     ultima_ora_path = os.path.join(generator.site_data_dir, "latest_news.json")
+    existing_items = []
+    if os.path.exists(ultima_ora_path):
+        try:
+            with open(ultima_ora_path, "r", encoding="utf-8") as f:
+                existing_items = json.load(f)
+
+            # Convert existing string dates back to datetime for sorting/dedup
+            from dateutil import parser as date_parser
+            for item in existing_items:
+                if isinstance(item.get('published'), str):
+                    try:
+                        item['published'] = date_parser.parse(item['published'])
+                    except:
+                        item['published'] = datetime.datetime.now(datetime.timezone.utc)
+        except Exception:
+            pass
+
+    # Combine and deduplicate across existing and new
+    all_combined_items = filtered_items + existing_items
+    final_deduped_items = []
+    for item in all_combined_items:
+        is_duplicate = False
+        for d_item in final_deduped_items:
+            if item['link'] == d_item['link']:
+                is_duplicate = True
+                break
+            similarity = difflib.SequenceMatcher(None, item['title'].lower(), d_item['title'].lower()).ratio()
+            if similarity > 0.8:
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            final_deduped_items.append(item)
+
+    # Sort again and keep the latest 50
+    final_deduped_items.sort(key=lambda x: x['published'], reverse=True)
+    final_deduped_items = final_deduped_items[:50]
+
     with open(ultima_ora_path, "w", encoding="utf-8") as f:
-        json.dump(filtered_items, f, ensure_ascii=False, default=str)
+        json.dump(final_deduped_items, f, ensure_ascii=False, default=str)
     
     # Force Citation Check on Features
     if "features" in map_data:
         for f in map_data["features"]:
             if "properties" in f and "description" in f["properties"]:
                 desc = f["properties"]["description"]
-                if "FONTE:" not in desc.upper() and "AGENCY:" not in desc.upper():
+                desc_upper = desc.upper()
+                if "FONTE:" not in desc_upper and "AGENCY:" not in desc_upper:
                     # Fallback append if model missed the explicit instruction
-                    f["properties"]["description"] += " (Fonte: Agenzie Stampa Internazionali - Reuters/AP/AFP/ANSA)"
-    
+                    f["properties"]["description"] += " (Fonte: Agenzie Stampa Internazionali)"
+
+    # Read existing map data for today to append new features
     now = datetime.datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    tensions_path = os.path.join(generator.site_data_dir, "tensions.json")
+
+    if os.path.exists(tensions_path):
+        try:
+            with open(tensions_path, "r", encoding="utf-8") as f:
+                history = json.load(f)
+                if date_str in history and "features" in history[date_str]:
+                    existing_features = history[date_str]["features"]
+                    # Simple dedup by location and category
+                    for new_f in map_data.get("features", []):
+                        is_dup = False
+                        new_props = new_f.get("properties", {})
+                        for ex_f in existing_features:
+                            ex_props = ex_f.get("properties", {})
+                            if new_props.get("location_name") == ex_props.get("location_name") and new_props.get("category") == ex_props.get("category"):
+                                is_dup = True
+                                break
+                        if not is_dup:
+                            existing_features.append(new_f)
+
+                    map_data["features"] = existing_features
+        except Exception as e:
+            print(f"Error reading existing map data: {e}")
+
     generator.save_tensions_map(map_data, now)
     
     print(f">>> SUCCESS. Map Update complete for {now.strftime('%Y-%m-%d %H:%M:%S')}")

@@ -1,6 +1,5 @@
-.env
+_site/
+.jekyll-cache/
 __pycache__/
-*.pyc
-.venv/
-venv/
-env/
+*.py[cod]
+*$py.class
