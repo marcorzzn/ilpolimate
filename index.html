@@ -99,6 +99,26 @@ title: Home
     </script>
 </div>
 
+<!-- Mini Map Feature -->
+<div class="mini-map-container" style="position: relative; width: 100%; height: 400px; margin-bottom: 40px; border-radius: 8px; overflow: hidden; border: 1px solid #eaeaea;">
+    <iframe src="{{ site.baseurl }}/map.html" width="100%" height="100%" frameborder="0" style="pointer-events: none; filter: contrast(1.1) brightness(0.9);"></iframe>
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; z-index: 10;">
+        <a href="{{ site.baseurl }}/map.html" style="background: rgba(0,0,0,0.8); color: #fff; padding: 15px 30px; font-family: 'Playfair Display', serif; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-decoration: none; border: 1px solid #d00; border-radius: 4px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            Esplora la Mappa Globale
+        </a>
+    </div>
+</div>
+
+<style>
+    body.dark-mode .mini-map-container {
+        border-color: #333;
+    }
+    .mini-map-container a:hover {
+        background: #d00 !important;
+        transform: scale(1.05);
+    }
+</style>
+
 <!-- Main Feature (Meccanismi / Daily Brief) -->
 {% assign latest = site.posts.first %}
 {% if latest %}
@@ -343,108 +363,19 @@ title: Home
             // Triage Mode Logic
             const feedSection = document.querySelector('.feed-section');
             if (feedSection) {
-                const triageHTML = `
-                    <div style="text-align: center; margin-bottom: 40px; margin-top: 50px;">
-                        <div style="font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #000; display: inline-block; margin-bottom: 15px; letter-spacing: 1px;">
-                            La rassegna del {{ latest.date | date: "%d" }}
-                            {% assign month = latest.date | date: "%B" %}
-                            {% case month %}
-                            {% when 'January' %}gennaio
-                            {% when 'February' %}febbraio
-                            {% when 'March' %}marzo
-                            {% when 'April' %}aprile
-                            {% when 'May' %}maggio
-                            {% when 'June' %}giugno
-                            {% when 'July' %}luglio
-                            {% when 'August' %}agosto
-                            {% when 'September' %}settembre
-                            {% when 'October' %}ottobre
-                            {% when 'November' %}novembre
-                            {% when 'December' %}dicembre
-                            {% endcase %}
-                            {{ latest.date | date: "%Y" }}
-                        </div>
-                    </div>
-                    <div class="triage-controls" style="text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.02); border: 1px solid #eaeaea; padding: 25px; border-radius: 8px;">
-                        <div style="margin-bottom: 15px;">
-                            <span style="font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; text-transform: uppercase;">
-                                Tempo a disposizione: <span id="timeValDisplay" style="color: #d00;">Tutto</span>
-                            </span>
-                        </div>
-                        <input type="range" id="triageSlider" min="0" max="4" value="4" step="1" style="width: 100%; max-width: 400px; cursor: pointer;">
-                        
-                        <div style="margin-top: 25px;">
-                            <button id="ttsPlayBtn" style="font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #111; border-radius: 30px; cursor: pointer; background: #111; color: #fff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s;">
-                                <i class="fas fa-play" style="margin-right: 8px;"></i> Ascolta Sintesi Feed
-                            </button>
-                            <button id="ttsStopBtn" style="display: none; font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #d00; border-radius: 30px; cursor: pointer; background: #fff; color: #d00; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s; margin-left:10px;">
-                                <i class="fas fa-stop"></i> Ferma
-                            </button>
-                        </div>
+                const audioHTML = `
+                    <div style="margin-top: 25px; text-align: center; margin-bottom: 30px;">
+                        <button id="ttsPlayBtn" style="font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #111; border-radius: 30px; cursor: pointer; background: #111; color: #fff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s;">
+                            <i class="fas fa-play" style="margin-right: 8px;"></i> Ascolta Sintesi Feed
+                        </button>
+                        <button id="ttsStopBtn" style="display: none; font-family: 'Inter', sans-serif; font-weight: 600; padding: 12px 25px; border: 1px solid #d00; border-radius: 30px; cursor: pointer; background: #fff; color: #d00; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s; margin-left:10px;">
+                            <i class="fas fa-stop"></i> Ferma
+                        </button>
                     </div>
                 `;
-                feedSection.insertAdjacentHTML('afterbegin', triageHTML);
+                feedSection.insertAdjacentHTML('afterbegin', audioHTML);
 
-                const slider = document.getElementById('triageSlider');
-                const timeDisplay = document.getElementById('timeValDisplay');
                 const clusters = document.querySelectorAll('.feed-cluster');
-
-                // Words to reading time (approx 200 words per minute)
-                let totalWords = 0;
-                clusters.forEach(cluster => {
-                    const items = cluster.querySelectorAll('.news-item');
-                    items.forEach(item => {
-                        const words = item.innerText.split(/\s+/).length;
-                        item.dataset.words = words;
-                        totalWords += words;
-                    });
-                });
-
-                const totalEstimatedMinutes = Math.max(1, Math.ceil(totalWords / 200));
-                slider.max = totalEstimatedMinutes;
-                slider.value = totalEstimatedMinutes;
-
-                const sliderToMinutes = { 0: 1, 1: 5, 2: 10, 3: 15, 4: 999 };
-
-                function updateFeed() {
-                    const sliderIndex = parseInt(slider.value);
-                    const targetMinutes = sliderToMinutes[sliderIndex];
-
-                    if (targetMinutes === 999) {
-                        timeDisplay.innerText = "Tutto (" + totalEstimatedMinutes + " min)";
-                    } else {
-                        timeDisplay.innerText = targetMinutes + (targetMinutes === 1 ? " Minuto" : " Minuti");
-                    }
-
-                    let runningWords = 0;
-                    const maxWords = targetMinutes * 200;
-
-                    clusters.forEach(cluster => {
-                        const items = cluster.querySelectorAll('.news-item');
-                        let clusterHasVisibleItems = false;
-
-                        items.forEach(item => {
-                            const words = parseInt(item.dataset.words);
-                            if (runningWords + words <= maxWords || targetMinutes >= totalEstimatedMinutes) {
-                                item.style.display = 'block';
-                                runningWords += words;
-                                clusterHasVisibleItems = true;
-                            } else {
-                                item.style.display = 'none';
-                            }
-                        });
-
-                        if (clusterHasVisibleItems) {
-                            cluster.style.display = 'block';
-                        } else {
-                            cluster.style.display = 'none';
-                        }
-                    });
-                }
-
-                slider.addEventListener('input', updateFeed);
-                // initial run
-                updateFeed();
 
                 // TTS Logic (Dynamic Web Speech API)
                 const playBtn = document.getElementById('ttsPlayBtn');
