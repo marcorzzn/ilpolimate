@@ -1,5 +1,4 @@
 import os
-import time
 from openai import OpenAI
 import yfinance as yf
 import json
@@ -20,7 +19,7 @@ class ContentAnalyzer:
         if not items: return None
         if not self.groq_client: return None
         
-        # Prepare context (Optimized string concatenation)
+        # Prepare context
         context_parts = []
         for item in items:
             context_parts.append(f"SOURCE: {item['source']}\nTITLE: {item['title']}\nLINK: {item['link']}\nCONTENT: {item['content']}\n\n---\n\n")
@@ -191,21 +190,27 @@ class ContentAnalyzer:
         
         market_headlines = []
         try:
-            for name, symbol in symbols.items():
-                ticker = yf.Ticker(symbol)
-                hist = ticker.history(period="2d")
-                if len(hist) >= 2:
-                    last_close = hist['Close'].iloc[-2]
-                    current = hist['Close'].iloc[-1]
-                    change = ((current - last_close) / last_close) * 100
-                    sign = "+" if change > 0 else ""
-                    headline = f"{name} ({symbol}): {current:.2f} ({sign}{change:.2f}%)"
-                    market_headlines.append(headline)
-                elif len(hist) == 1:
-                    current = hist['Close'].iloc[-1]
-                    headline = f"{name} ({symbol}): {current:.2f}"
-                    market_headlines.append(headline)
-                    
+            tickers = list(symbols.values())
+            # Batch download all tickers in parallel
+            hist_data = yf.download(tickers, period="2d", threads=True, progress=False)
+
+            if not hist_data.empty and 'Close' in hist_data.columns.levels[0]:
+                close_data = hist_data['Close']
+                for name, symbol in symbols.items():
+                    if symbol in close_data.columns:
+                        hist = close_data[symbol].dropna()
+                        if len(hist) >= 2:
+                            last_close = hist.iloc[-2]
+                            current = hist.iloc[-1]
+                            change = ((current - last_close) / last_close) * 100
+                            sign = "+" if change > 0 else ""
+                            headline = f"{name} ({symbol}): {current:.2f} ({sign}{change:.2f}%)"
+                            market_headlines.append(headline)
+                        elif len(hist) == 1:
+                            current = hist.iloc[-1]
+                            headline = f"{name} ({symbol}): {current:.2f}"
+                            market_headlines.append(headline)
+
             if not market_headlines:
                 return ["Mercati chiusi o dati temporaneamente non disponibili."]
             return market_headlines
